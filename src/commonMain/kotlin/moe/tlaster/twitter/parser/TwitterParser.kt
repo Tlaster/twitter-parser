@@ -43,7 +43,7 @@ class TwitterParser {
                     state = if (state == State.AccSpace) {
                         contentBuilder.add(Type.UserName to StringBuilder())
                         State.InUserName
-                    } else if (state != State.Content) {
+                    } else if (state != State.Content && state != State.InUrl) {
                         accept(contentBuilder)
                     } else {
                         state
@@ -55,7 +55,7 @@ class TwitterParser {
                     state = if (state == State.AccSpace) {
                         contentBuilder.add(Type.HashTag to StringBuilder())
                         State.InHashTag
-                    } else if (state != State.Content) {
+                    } else if (state != State.Content && state != State.InUrl) {
                         accept(contentBuilder)
                     } else {
                         state
@@ -67,7 +67,7 @@ class TwitterParser {
                     state = if (state == State.AccSpace) {
                         contentBuilder.add(Type.CashTag to StringBuilder())
                         State.InCashTag
-                    } else if (state != State.Content) {
+                    } else if (state != State.Content && state != State.InUrl) {
                         accept(contentBuilder)
                     } else {
                         state

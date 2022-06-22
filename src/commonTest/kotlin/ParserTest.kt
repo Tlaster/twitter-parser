@@ -231,4 +231,16 @@ class ParserTest {
         assertEquals(content, result[0].value)
     }
 
+    @Test
+    fun testUrlHashTag() {
+        val parser = TwitterParser()
+        val url = "https://example.com/"
+        val hashtag = "#hashtag"
+        val content = "$url$hashtag"
+        val result = parser.parse(content)
+        assertEquals(1, result.size)
+        assertIs<UrlToken>(result[0])
+        assertEquals(content, result[0].value)
+    }
+
 }
