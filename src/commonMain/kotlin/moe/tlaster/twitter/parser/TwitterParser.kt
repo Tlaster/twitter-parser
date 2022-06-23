@@ -1,6 +1,21 @@
 package moe.tlaster.twitter.parser
 
 class TwitterParser {
+    private val urlEscapeChars = listOf(
+        '!',
+        '~',
+        '*',
+        '\'',
+        '(',
+        ')',
+        ';',
+        ':',
+        '+',
+        ',',
+        '%',
+        '[',
+        ']',
+    )
     private val urlRegex =
         "https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)".toRegex()
     private val digits = '0'..'9'
@@ -39,7 +54,7 @@ class TwitterParser {
         var state = State.AccSpace
         for (char in value) {
             when (char) {
-                UserNameToken.Tag -> {
+                in UserNameToken.Tags -> {
                     state = if (state == State.AccSpace) {
                         contentBuilder.add(Type.UserName to StringBuilder())
                         State.InUserName
@@ -51,7 +66,7 @@ class TwitterParser {
                     contentBuilder.last().second.append(char)
                 }
 
-                HashTagToken.Tag -> {
+                in HashTagToken.Tags -> {
                     state = if (state == State.AccSpace) {
                         contentBuilder.add(Type.HashTag to StringBuilder())
                         State.InHashTag
@@ -63,7 +78,7 @@ class TwitterParser {
                     contentBuilder.last().second.append(char)
                 }
 
-                CashTagToken.Tag -> {
+                in CashTagToken.Tags -> {
                     state = if (state == State.AccSpace) {
                         contentBuilder.add(Type.CashTag to StringBuilder())
                         State.InCashTag
@@ -132,7 +147,7 @@ class TwitterParser {
                     contentBuilder.last().second.append(char)
                 }
 
-                ' ' -> {
+                ' ', '\n', '　' -> {
                     state = when (state) {
                         State.Content -> State.AccSpace
                         State.AccSpace -> State.AccSpace
@@ -159,7 +174,7 @@ class TwitterParser {
                     when (state) {
                         State.InUserName -> {
                             if (!userNameCharList.contains(char)) {
-                                state = if (contentBuilder.last().second.last() == UserNameToken.Tag) {
+                                state = if (contentBuilder.last().second.last() in UserNameToken.Tags) {
                                     reject(contentBuilder)
                                 } else {
                                     accept(contentBuilder)
@@ -169,7 +184,7 @@ class TwitterParser {
 
                         State.InHashTag -> {
                             if (!char.isLetterOrDigit()) {
-                                state = if (contentBuilder.last().second.last() == HashTagToken.Tag) {
+                                state = if (contentBuilder.last().second.last() in HashTagToken.Tags) {
                                     reject(contentBuilder)
                                 } else {
                                     accept(contentBuilder)
@@ -179,11 +194,17 @@ class TwitterParser {
 
                         State.InCashTag -> {
                             if (!letters.contains(char)) {
-                                state = if (contentBuilder.last().second.last() == CashTagToken.Tag) {
+                                state = if (contentBuilder.last().second.last() in CashTagToken.Tags) {
                                     reject(contentBuilder)
                                 } else {
                                     accept(contentBuilder)
                                 }
+                            }
+                        }
+
+                        State.InUrl -> {
+                            if (char in urlEscapeChars) {
+                                state = accept(contentBuilder)
                             }
                         }
 
@@ -232,3 +253,4 @@ class TwitterParser {
         return State.Content
     }
 }
+

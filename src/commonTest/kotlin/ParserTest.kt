@@ -243,4 +243,185 @@ class ParserTest {
         assertEquals(content, result[0].value)
     }
 
+    @Test
+    fun testLineBreakAfterUrl() {
+        val parser = TwitterParser()
+        val url = "https://example.com/"
+        val content = "$url\n"
+        val result = parser.parse(content)
+        assertEquals(2, result.size)
+        assertIs<UrlToken>(result[0])
+        assertEquals(url, result[0].value)
+        assertIs<StringToken>(result[1])
+        assertEquals("\n", result[1].value)
+    }
+
+    @Test
+    fun testLineBreakBeforeUrl() {
+        val parser = TwitterParser()
+        val url = "https://example.com/"
+        val content = "\n$url"
+        val result = parser.parse(content)
+        assertEquals(2, result.size)
+        assertIs<StringToken>(result[0])
+        assertEquals("\n", result[0].value)
+        assertIs<UrlToken>(result[1])
+        assertEquals(url, result[1].value)
+    }
+
+    @Test
+    fun testLineBreakAfterUserName() {
+        val parser = TwitterParser()
+        val username = "@username"
+        val content = "$username\n"
+        val result = parser.parse(content)
+        assertEquals(2, result.size)
+        assertIs<UserNameToken>(result[0])
+        assertEquals(username, result[0].value)
+        assertIs<StringToken>(result[1])
+        assertEquals("\n", result[1].value)
+    }
+
+    @Test
+    fun testLineBreakBeforeUserName() {
+        val parser = TwitterParser()
+        val username = "@username"
+        val content = "\n$username"
+        val result = parser.parse(content)
+        assertEquals(2, result.size)
+        assertIs<StringToken>(result[0])
+        assertEquals("\n", result[0].value)
+        assertIs<UserNameToken>(result[1])
+        assertEquals(username, result[1].value)
+    }
+
+    @Test
+    fun testLineBreakAfterHashTag() {
+        val parser = TwitterParser()
+        val hashtag = "#hashtag"
+        val content = "$hashtag\n"
+        val result = parser.parse(content)
+        assertEquals(2, result.size)
+        assertIs<HashTagToken>(result[0])
+        assertEquals(hashtag, result[0].value)
+        assertIs<StringToken>(result[1])
+        assertEquals("\n", result[1].value)
+    }
+
+    @Test
+    fun testLineBreakBeforeHashTag() {
+        val parser = TwitterParser()
+        val hashtag = "#hashtag"
+        val content = "\n$hashtag"
+        val result = parser.parse(content)
+        assertEquals(2, result.size)
+        assertIs<StringToken>(result[0])
+        assertEquals("\n", result[0].value)
+        assertIs<HashTagToken>(result[1])
+        assertEquals(hashtag, result[1].value)
+    }
+
+    @Test
+    fun testLineBreakAfterCashTag() {
+        val parser = TwitterParser()
+        val cashtag = "\$CASHTAG"
+        val content = "$cashtag\n"
+        val result = parser.parse(content)
+        assertEquals(2, result.size)
+        assertIs<CashTagToken>(result[0])
+        assertEquals(cashtag, result[0].value)
+        assertIs<StringToken>(result[1])
+        assertEquals("\n", result[1].value)
+    }
+
+    @Test
+    fun testLineBreakBeforeCashTag() {
+        val parser = TwitterParser()
+        val cashtag = "\$CASHTAG"
+        val content = "\n$cashtag"
+        val result = parser.parse(content)
+        assertEquals(2, result.size)
+        assertIs<StringToken>(result[0])
+        assertEquals("\n", result[0].value)
+        assertIs<CashTagToken>(result[1])
+        assertEquals(cashtag, result[1].value)
+    }
+
+    @Test
+    fun testAltUserName() {
+        val parser = TwitterParser()
+        val username = "＠username"
+        val content = "$username: hello"
+        val result = parser.parse(content)
+        assertEquals(2, result.size)
+        assertIs<UserNameToken>(result[0])
+        assertEquals(username, result[0].value)
+        assertIs<StringToken>(result[1])
+        assertEquals(": hello", result[1].value)
+    }
+
+    @Test
+    fun testAltHashTag() {
+        val parser = TwitterParser()
+        val hashtag = "＃hashtag"
+        val content = "$hashtag: hello"
+        val result = parser.parse(content)
+        assertEquals(2, result.size)
+        assertIs<HashTagToken>(result[0])
+        assertEquals(hashtag, result[0].value)
+        assertIs<StringToken>(result[1])
+        assertEquals(": hello", result[1].value)
+    }
+
+    @Test
+    fun testAltCashTag() {
+        val parser = TwitterParser()
+        val cashtag = "＄CASHTAG"
+        val content = "$cashtag: hello"
+        val result = parser.parse(content)
+        assertEquals(2, result.size)
+        assertIs<CashTagToken>(result[0])
+        assertEquals(cashtag, result[0].value)
+        assertIs<StringToken>(result[1])
+        assertEquals(": hello", result[1].value)
+    }
+
+    @Test
+    fun testAltSpaceWithUserName() {
+        val parser = TwitterParser()
+        val username = "@username"
+        val content = "$username　hello"
+        val result = parser.parse(content)
+        assertEquals(2, result.size)
+        assertIs<UserNameToken>(result[0])
+        assertEquals(username, result[0].value)
+        assertIs<StringToken>(result[1])
+        assertEquals("　hello", result[1].value)
+    }
+
+    @Test
+    fun testAltSpaceWithHashTag() {
+        val parser = TwitterParser()
+        val hashtag = "#hashtag"
+        val content = "$hashtag:　hello"
+        val result = parser.parse(content)
+        assertEquals(2, result.size)
+        assertIs<HashTagToken>(result[0])
+        assertEquals(hashtag, result[0].value)
+        assertIs<StringToken>(result[1])
+        assertEquals(":　hello", result[1].value)
+    }
+
+    @Test
+    fun testAltSpaceWithCashTag() {
+        val parser = TwitterParser()
+        val cashtag = "\$CASHTAG"
+        val content = "$cashtag:　hello"
+        val result = parser.parse(content)
+        assertEquals(2, result.size)
+        assertIs<CashTagToken>(result[0])
+        assertEquals(cashtag, result[0].value)
+        assertIs<StringToken>(result[1])
+        assertEquals(":　hello", result[1].value)
+    }
 }

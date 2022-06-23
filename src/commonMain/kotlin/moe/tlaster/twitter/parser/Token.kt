@@ -7,7 +7,7 @@ data class CashTagToken(
     override val value: String,
 ) : Token {
     companion object {
-        internal const val Tag = '$'
+        internal val Tags = listOf('$', '＄')
     }
 }
 
@@ -15,7 +15,7 @@ data class HashTagToken(
     override val value: String,
 ) : Token {
     companion object {
-        internal const val Tag = '#'
+        internal val Tags = listOf('#', '＃')
     }
 }
 
@@ -31,6 +31,6 @@ data class UserNameToken(
     override val value: String,
 ) : Token {
     companion object {
-        internal const val Tag = '@'
+        internal val Tags = listOf('@', '＠')
     }
 }
