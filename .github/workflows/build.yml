@@ -32,7 +32,7 @@ jobs:
       run: ./.github/apply_signing.sh
 
     - name: Build with Gradle
-      run: ./gradlew lint assemble --stacktrace --no-daemon --no-parallel
+      run: ./gradlew assemble --stacktrace --no-daemon --no-parallel
 
     - name: Testing
       run: ./gradlew test --no-daemon --no-parallel
