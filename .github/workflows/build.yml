@@ -35,7 +35,7 @@ jobs:
       run: ./gradlew assemble --stacktrace --no-daemon --no-parallel
 
     - name: Testing
-      run: ./gradlew test --no-daemon --no-parallel
+      run: ./gradlew check --no-daemon --no-parallel
 
     - name: Publishing
       if: startsWith(github.ref, 'refs/tags/')
