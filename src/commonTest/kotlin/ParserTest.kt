@@ -61,6 +61,19 @@ class ParserTest {
     }
 
     @Test
+    fun testHashTagWithUnderline() {
+        val parser = TwitterParser()
+        val hashtag = "#hashtag_hashtag"
+        val content = "$hashtag: hello"
+        val result = parser.parse(content)
+        assertEquals(2, result.size)
+        assertIs<HashTagToken>(result[0])
+        assertEquals(hashtag, result[0].value)
+        assertIs<StringToken>(result[1])
+        assertEquals(": hello", result[1].value)
+    }
+
+    @Test
     fun testCashTagWithSymbol() {
         val parser = TwitterParser()
         val cashtag = "\$CASHTAG"

@@ -183,7 +183,7 @@ class TwitterParser {
                         }
 
                         State.InHashTag -> {
-                            if (!char.isLetterOrDigit()) {
+                            if (!char.isLetterOrDigit() && char != '_') {
                                 state = if (contentBuilder.last().second.last() in HashTagToken.Tags) {
                                     reject(contentBuilder)
                                 } else {
