@@ -24,11 +24,8 @@ kotlin {
         }
     }
     js(BOTH) {
-        browser {
-            commonWebpackConfig {
-                cssSupport.enabled = true
-            }
-        }
+        nodejs()
+        browser()
     }
     macosX64()
     macosArm64()
