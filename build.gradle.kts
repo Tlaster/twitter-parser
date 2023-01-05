@@ -14,7 +14,6 @@ repositories {
 }
 
 kotlin {
-    ios()
     jvm {
         compilations.all {
             kotlinOptions.jvmTarget = "11"
@@ -27,9 +26,28 @@ kotlin {
         nodejs()
         browser()
     }
-    macosX64()
-    macosArm64()
-    
+    // detecting the host OS
+    val osName = System.getProperty("os.name").toLowerCase()
+    val isWindows = osName.contains("win")
+    val isMac = osName.contains("mac")
+    val isLinux = osName.contains("nux") || osName.contains("nix") || osName.contains("aix")
+    if (isMac) {
+        ios()
+        macosX64()
+        macosArm64()
+    }
+    if (isWindows) {
+        mingwX64()
+        mingwX86()
+    }
+    if (isLinux) {
+        linuxX64()
+        linuxArm64()
+        linuxArm32Hfp()
+        linuxMips32()
+        linuxMipsel32()
+    }
+
     sourceSets {
         val commonMain by getting
         val commonTest by getting {
