@@ -6,6 +6,8 @@
 ![badge-jvm](https://img.shields.io/badge/Platform-JVM-orange)
 ![badge-js](https://img.shields.io/badge/Platform-JS-yellow)
 ![badge-macOS](https://img.shields.io/badge/Platform-macOS-purple)
+![badge-linux](https://img.shields.io/badge/Platform-Linux-black)
+![badge-windows](https://img.shields.io/badge/Platform-Windows-blue)
 
 A Kotlin multiplatform library to parse Twitter text. Like the [twitter-text](https://github.com/twitter/twitter-text).
 
