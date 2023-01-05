@@ -1,6 +1,8 @@
 package moe.tlaster.twitter.parser
 
-class TwitterParser {
+class TwitterParser(
+    private val enableAcct: Boolean = false,
+) {
     private val urlEscapeChars = listOf(
         '!',
         '~',
@@ -27,6 +29,7 @@ class TwitterParser {
         AccSpace,
         Content,
         InUserName,
+        InUserNameAcct,
         InHashTag,
         InCashTag,
         MightUrlH,
@@ -58,8 +61,20 @@ class TwitterParser {
                     state = if (state == State.AccSpace) {
                         contentBuilder.add(Type.UserName to StringBuilder())
                         State.InUserName
-                    } else if (state != State.Content && state != State.InUrl) {
+                    } else if (state != State.Content && state != State.InUrl && (!enableAcct || state != State.InUserName)) {
                         accept(contentBuilder)
+                    } else if (enableAcct) {
+                        when (state) {
+                            State.InUserName -> {
+                                State.InUserNameAcct
+                            }
+                            State.InUserNameAcct -> {
+                                accept(contentBuilder)
+                            }
+                            else -> {
+                                state
+                            }
+                        }
                     } else {
                         state
                     }
@@ -128,6 +143,7 @@ class TwitterParser {
                         State.MightUrlP -> State.MightUrlDot
                         State.MightUrlS -> State.MightUrlDot
                         State.InUserName,
+                        State.InUserNameAcct,
                         State.InCashTag,
                         State.InHashTag -> accept(contentBuilder)
                         else -> state
@@ -140,6 +156,7 @@ class TwitterParser {
                         State.MightUrlDot -> State.MightUrlSlash1
                         State.MightUrlSlash1 -> State.InUrl
                         State.InUserName,
+                        State.InUserNameAcct,
                         State.InHashTag,
                         State.InCashTag -> accept(contentBuilder)
                         else -> state
@@ -152,6 +169,7 @@ class TwitterParser {
                         State.Content -> Unit
                         State.AccSpace -> Unit
                         State.InUserName,
+                        State.InUserNameAcct,
                         State.InHashTag,
                         State.InCashTag,
                         State.InUrl -> {
@@ -176,6 +194,16 @@ class TwitterParser {
                     when (state) {
                         State.InUserName -> {
                             if (!userNameCharList.contains(char)) {
+                                state = if (contentBuilder.last().second.last() in UserNameToken.Tags) {
+                                    reject(contentBuilder)
+                                } else {
+                                    accept(contentBuilder)
+                                }
+                            }
+                        }
+
+                        State.InUserNameAcct -> {
+                            if (!userNameCharList.contains(char) && (char != '.' && enableAcct)) {
                                 state = if (contentBuilder.last().second.last() in UserNameToken.Tags) {
                                     reject(contentBuilder)
                                 } else {
