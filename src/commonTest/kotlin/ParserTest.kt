@@ -437,4 +437,18 @@ class ParserTest {
         assertIs<StringToken>(result[1])
         assertEquals(":　hello", result[1].value)
     }
+
+    @Test
+    fun testUserNameWithQuote() {
+        val parser = TwitterParser()
+        val content = "animation practice with @enarane's Goat-chan \uD83E\uDEE1"
+        val result = parser.parse(content)
+        assertEquals(3, result.size)
+        assertIs<StringToken>(result[0])
+        assertEquals("animation practice with ", result[0].value)
+        assertIs<UserNameToken>(result[1])
+        assertEquals("@enarane", result[1].value)
+        assertIs<StringToken>(result[2])
+        assertEquals("'s Goat-chan \uD83E\uDEE1", result[2].value)
+    }
 }

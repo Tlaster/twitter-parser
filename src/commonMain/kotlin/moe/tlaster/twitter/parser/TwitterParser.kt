@@ -148,15 +148,14 @@ class TwitterParser {
                 }
 
                 ' ', '\n', '　' -> {
-                    state = when (state) {
-                        State.Content -> State.AccSpace
-                        State.AccSpace -> State.AccSpace
+                    when (state) {
+                        State.Content -> Unit
+                        State.AccSpace -> Unit
                         State.InUserName,
                         State.InHashTag,
                         State.InCashTag,
                         State.InUrl -> {
                             accept(contentBuilder)
-                            State.AccSpace
                         }
 
                         State.MightUrlH,
@@ -165,8 +164,11 @@ class TwitterParser {
                         State.MightUrlS,
                         State.MightUrlP,
                         State.MightUrlDot,
-                        State.MightUrlSlash1 -> reject(contentBuilder)
+                        State.MightUrlSlash1 -> {
+                            reject(contentBuilder)
+                        }
                     }
+                    state = State.AccSpace
                     contentBuilder.last().second.append(char)
                 }
 
