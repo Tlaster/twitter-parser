@@ -443,4 +443,14 @@ class ParserWithAcctTest {
         assertIs<StringToken>(result[1])
         assertEquals(": hello", result[1].value)
     }
+
+    @Test
+    fun testEmoji() {
+        val emoji = ":smile:"
+        val content = "hello $emoji"
+        val result = parser.parse(content)
+        assertEquals(1, result.size)
+        assertIs<StringToken>(result[0])
+        assertEquals("hello $emoji", result[0].value)
+    }
 }

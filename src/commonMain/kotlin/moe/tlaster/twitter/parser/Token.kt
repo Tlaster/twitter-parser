@@ -34,3 +34,11 @@ data class UserNameToken(
         internal val Tags = listOf('@', '＠')
     }
 }
+
+data class EmojiToken(
+    override val value: String,
+) : Token {
+    companion object {
+        internal val Tags = listOf(':', '：')
+    }
+}

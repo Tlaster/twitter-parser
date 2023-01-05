@@ -4,8 +4,8 @@ import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 
-class ParserTest {
-    private val parser = TwitterParser()
+class ParserTestWithEmojiAndAcct {
+    private val parser = TwitterParser(enableAcct = true, enableEmoji = true)
 
     @Test
     fun testSimpleTweet() {
@@ -428,9 +428,9 @@ class ParserTest {
         val result = parser.parse(content)
         assertEquals(2, result.size)
         assertIs<UserNameToken>(result[0])
-        assertEquals("@user", result[0].value)
+        assertEquals(userName, result[0].value)
         assertIs<StringToken>(result[1])
-        assertEquals("@domain: hello", result[1].value)
+        assertEquals(": hello", result[1].value)
     }
 
     @Test
@@ -440,9 +440,9 @@ class ParserTest {
         val result = parser.parse(content)
         assertEquals(2, result.size)
         assertIs<UserNameToken>(result[0])
-        assertEquals("@user", result[0].value)
+        assertEquals(userName, result[0].value)
         assertIs<StringToken>(result[1])
-        assertEquals("@domain.host: hello", result[1].value)
+        assertEquals(": hello", result[1].value)
     }
 
     @Test
@@ -450,8 +450,10 @@ class ParserTest {
         val emoji = ":smile:"
         val content = "hello $emoji"
         val result = parser.parse(content)
-        assertEquals(1, result.size)
+        assertEquals(2, result.size)
         assertIs<StringToken>(result[0])
-        assertEquals("hello $emoji", result[0].value)
+        assertEquals("hello ", result[0].value)
+        assertIs<EmojiToken>(result[1])
+        assertEquals(emoji, result[1].value)
     }
 }

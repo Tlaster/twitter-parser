@@ -2,6 +2,7 @@ package moe.tlaster.twitter.parser
 
 class TwitterParser(
     private val enableAcct: Boolean = false,
+    private val enableEmoji: Boolean = false,
 ) {
     private val urlEscapeChars = listOf(
         '!',
@@ -40,6 +41,7 @@ class TwitterParser(
         MightUrlDot,
         MightUrlSlash1,
         InUrl,
+        InEmoji,
     }
 
     private enum class Type {
@@ -48,6 +50,7 @@ class TwitterParser(
         HashTag,
         CashTag,
         Url,
+        Emoji,
     }
 
     fun parse(value: String): List<Token> {
@@ -146,6 +149,14 @@ class TwitterParser(
                         State.InUserNameAcct,
                         State.InCashTag,
                         State.InHashTag -> accept(contentBuilder)
+                        State.AccSpace -> {
+                            if (enableEmoji) {
+                                contentBuilder.add(Type.Emoji to StringBuilder())
+                                State.InEmoji
+                            } else {
+                                state
+                            }
+                        }
                         else -> state
                     }
                     contentBuilder.last().second.append(char)
@@ -176,6 +187,7 @@ class TwitterParser(
                             accept(contentBuilder)
                         }
 
+                        State.InEmoji,
                         State.MightUrlH,
                         State.MightUrlT1,
                         State.MightUrlT2,
@@ -211,6 +223,17 @@ class TwitterParser(
                                 }
                             }
                         }
+
+                        State.InEmoji -> {
+                            if (!char.isLetterOrDigit() && char != '_') {
+                                state = if (contentBuilder.last().second.last() in EmojiToken.Tags) {
+                                    reject(contentBuilder)
+                                } else {
+                                    accept(contentBuilder)
+                                }
+                            }
+                        }
+
 
                         State.InHashTag -> {
                             if (!char.isLetterOrDigit() && char != '_') {
@@ -266,19 +289,20 @@ class TwitterParser(
                 }
 
                 Type.UserName -> UserNameToken(it.second.toString())
+                Type.Emoji -> EmojiToken(it.second.toString())
             }
         }
     }
 
     private fun reject(contentBuilder: ArrayList<Pair<Type, StringBuilder>>): State {
-        // Not a valid hashtag/username/cashtag/http
+        // Not a valid hashtag/username/cashtag/http/emoji
         val last = contentBuilder.removeLast()
         contentBuilder.last().second.append(last.second)
         return State.Content
     }
 
     private fun accept(contentBuilder: ArrayList<Pair<Type, StringBuilder>>): State {
-        // ACC for hashtag/username/cashtag/http
+        // ACC for hashtag/username/cashtag/http/emoji
         contentBuilder.add(Type.Content to StringBuilder())
         return State.Content
     }

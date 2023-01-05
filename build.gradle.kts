@@ -22,7 +22,7 @@ kotlin {
             useJUnitPlatform()
         }
     }
-    js(BOTH) {
+    js(IR) {
         nodejs()
         browser()
     }
