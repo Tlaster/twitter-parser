@@ -72,9 +72,11 @@ class TwitterParser(
                             State.InUserName -> {
                                 State.InUserNameAcct
                             }
+
                             State.InUserNameAcct -> {
                                 accept(contentBuilder)
                             }
+
                             else -> {
                                 state
                             }
@@ -149,7 +151,9 @@ class TwitterParser(
                         State.InUserName,
                         State.InUserNameAcct,
                         State.InCashTag,
-                        State.InHashTag -> accept(contentBuilder)
+                        State.InHashTag,
+                        -> accept(contentBuilder)
+
                         State.AccSpace -> {
                             if (enableEmoji) {
                                 contentBuilder.add(Type.Emoji to StringBuilder())
@@ -158,6 +162,7 @@ class TwitterParser(
                                 state
                             }
                         }
+
                         else -> state
                     }
                     contentBuilder.last().second.append(char)
@@ -170,7 +175,9 @@ class TwitterParser(
                         State.InUserName,
                         State.InUserNameAcct,
                         State.InHashTag,
-                        State.InCashTag -> accept(contentBuilder)
+                        State.InCashTag,
+                        -> accept(contentBuilder)
+
                         else -> state
                     }
                     contentBuilder.last().second.append(char)
@@ -184,7 +191,8 @@ class TwitterParser(
                         State.InUserNameAcct,
                         State.InHashTag,
                         State.InCashTag,
-                        State.InUrl -> {
+                        State.InUrl,
+                        -> {
                             accept(contentBuilder)
                         }
 
@@ -195,7 +203,8 @@ class TwitterParser(
                         State.MightUrlS,
                         State.MightUrlP,
                         State.MightUrlDot,
-                        State.MightUrlSlash1 -> {
+                        State.MightUrlSlash1,
+                        -> {
                             reject(contentBuilder)
                         }
                     }
@@ -268,7 +277,9 @@ class TwitterParser(
                         State.MightUrlS,
                         State.MightUrlP,
                         State.MightUrlDot,
-                        State.MightUrlSlash1 -> state = reject(contentBuilder)
+                        State.MightUrlSlash1,
+                        -> state = reject(contentBuilder)
+
                         else -> Unit
                     }
                     contentBuilder.last().second.append(char)
