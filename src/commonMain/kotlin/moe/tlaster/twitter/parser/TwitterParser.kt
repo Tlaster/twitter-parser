@@ -3,6 +3,7 @@ package moe.tlaster.twitter.parser
 class TwitterParser(
     private val enableAcct: Boolean = false,
     private val enableEmoji: Boolean = false,
+    private val enableDotInUserName: Boolean = false,
 ) {
     private val urlEscapeChars = listOf(
         '!',
@@ -205,7 +206,7 @@ class TwitterParser(
                 else -> {
                     when (state) {
                         State.InUserName -> {
-                            if (!userNameCharList.contains(char)) {
+                            if (!userNameCharList.contains(char) && (!enableDotInUserName || char != '.')) {
                                 state = if (contentBuilder.last().second.last() in UserNameToken.Tags) {
                                     reject(contentBuilder)
                                 } else {
