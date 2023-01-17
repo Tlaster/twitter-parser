@@ -20,8 +20,6 @@ class TwitterParser(
         '[',
         ']',
     )
-    private val urlRegex =
-        "https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)".toRegex()
     private val digits = '0'..'9'
     private val letters = ('a'..'z') + ('A'..'Z')
 
@@ -163,6 +161,10 @@ class TwitterParser(
                             }
                         }
 
+                        State.InUrl -> {
+                            accept(contentBuilder)
+                        }
+
                         else -> state
                     }
                     contentBuilder.last().second.append(char)
@@ -293,11 +295,7 @@ class TwitterParser(
                 Type.CashTag -> CashTagToken(it.second.toString())
                 Type.Url -> {
                     val second = it.second.toString()
-                    if (urlRegex.matches(second)) {
-                        UrlToken(second)
-                    } else {
-                        StringToken(second)
-                    }
+                    UrlToken(second)
                 }
 
                 Type.UserName -> UserNameToken(it.second.toString())

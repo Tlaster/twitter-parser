@@ -466,4 +466,28 @@ class ParserTest {
         assertIs<StringToken>(result[1])
         assertEquals(".name: hello", result[1].value)
     }
+
+    @Test
+    fun testUrlEndWithEscapes() {
+        val url = "http://www.cool.com.au/ersdfs?dfd=dfgd@s=1"
+        val content = "$url: hello"
+        val result = parser.parse(content)
+        assertEquals(2, result.size)
+        assertIs<UrlToken>(result[0])
+        assertEquals(url, result[0].value)
+        assertIs<StringToken>(result[1])
+        assertEquals(": hello", result[1].value)
+    }
+
+    @Test
+    fun testURlWithNonAscII() {
+        val url = "http://de.wikipedia.org/wiki/Fürth"
+        val content = "$url hello"
+        val result = parser.parse(content)
+        assertEquals(2, result.size)
+        assertIs<UrlToken>(result[0])
+        assertEquals(url, result[0].value)
+        assertIs<StringToken>(result[1])
+        assertEquals(" hello", result[1].value)
+    }
 }
