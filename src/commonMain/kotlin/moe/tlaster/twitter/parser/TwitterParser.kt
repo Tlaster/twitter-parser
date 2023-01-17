@@ -60,27 +60,23 @@ class TwitterParser(
         for (char in value) {
             when (char) {
                 in UserNameToken.Tags -> {
-                    state = if (state == State.AccSpace) {
-                        contentBuilder.add(Type.UserName to StringBuilder())
-                        State.InUserName
-                    } else if (state != State.Content && state != State.InUrl && (!enableAcct || state != State.InUserName)) {
-                        accept(contentBuilder)
-                    } else if (enableAcct) {
-                        when (state) {
-                            State.InUserName -> {
-                                State.InUserNameAcct
-                            }
-
-                            State.InUserNameAcct -> {
-                                accept(contentBuilder)
-                            }
-
-                            else -> {
-                                state
-                            }
+                    state = when {
+                        state == State.AccSpace -> {
+                            contentBuilder.add(Type.UserName to StringBuilder())
+                            State.InUserName
                         }
-                    } else {
-                        state
+                        enableAcct && state == State.InUserName -> {
+                            State.InUserNameAcct
+                        }
+                        enableAcct && state == State.InUserNameAcct -> {
+                            accept(contentBuilder)
+                        }
+                        state != State.Content && state != State.InUrl -> {
+                            accept(contentBuilder)
+                        }
+                        else -> {
+                            state
+                        }
                     }
                     contentBuilder.last().second.append(char)
                 }
