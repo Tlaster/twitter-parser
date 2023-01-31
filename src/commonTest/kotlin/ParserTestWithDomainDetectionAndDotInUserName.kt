@@ -502,4 +502,28 @@ class ParserTestWithDomainDetectionAndDotInUserName {
         assertIs<StringToken>(result[1])
         assertEquals(": hello", result[1].value)
     }
+
+
+    @Test
+    fun testDomainWithLineBreak() {
+        val text = "Building @Buttrfly.lens \uD83E\uDD8B × \uD83C\uDF3F \n\nCryptoStats.fyi  •  dapp.limo  •  0xMoe.art"
+        val result = parser.parse(text)
+        assertEquals(8, result.size)
+        assertIs<StringToken>(result[0])
+        assertEquals("Building ", result[0].value)
+        assertIs<UserNameToken>(result[1])
+        assertEquals("@Buttrfly.lens", result[1].value)
+        assertIs<StringToken>(result[2])
+        assertEquals(" \uD83E\uDD8B × \uD83C\uDF3F \n\n", result[2].value)
+        assertIs<UrlToken>(result[3])
+        assertEquals("CryptoStats.fyi", result[3].value)
+        assertIs<StringToken>(result[4])
+        assertEquals("  •  ", result[4].value)
+        assertIs<UrlToken>(result[5])
+        assertEquals("dapp.limo", result[5].value)
+        assertIs<StringToken>(result[6])
+        assertEquals("  •  ", result[6].value)
+        assertIs<UrlToken>(result[7])
+        assertEquals("0xMoe.art", result[7].value)
+    }
 }

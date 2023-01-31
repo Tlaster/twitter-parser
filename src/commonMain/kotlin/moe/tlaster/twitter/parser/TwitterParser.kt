@@ -326,19 +326,24 @@ class TwitterParser(
                         -> {
                             if (char == '.' && enableDomainDetection) {
                                 // find string after space in contentBuilder
-                                val lastContent = contentBuilder.last().second.split(' ')
-                                if (lastContent.last().all { it.isLetterOrDigit() }) {
+                                val lastContentBuilder = StringBuilder()
+                                for (c in contentBuilder.last().second.reversed()) {
+                                    if (c == ' ' || c == '\n' || c == '　') {
+                                        break
+                                    }
+                                    lastContentBuilder.insert(0, c)
+                                }
+                                if (lastContentBuilder.all { it.isLetterOrDigit() }) {
                                     state = State.MightDomain
-                                    val content = lastContent.last()
                                     if (contentBuilder.any()) {
                                         contentBuilder.last().second.deleteRange(
-                                            contentBuilder.last().second.length - content.length,
+                                            contentBuilder.last().second.length - lastContentBuilder.length,
                                             contentBuilder.last().second.length
                                         )
                                     } else {
                                         contentBuilder.removeLast()
                                     }
-                                    contentBuilder.add(Type.Url to StringBuilder(lastContent.last()))
+                                    contentBuilder.add(Type.Url to lastContentBuilder)
                                 }
                             }
                         }

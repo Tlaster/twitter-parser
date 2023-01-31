@@ -500,4 +500,25 @@ class ParserTest {
         assertIs<StringToken>(result[0])
         assertEquals("$domain: hello", result[0].value)
     }
+
+    @Test
+    fun testUrlWithLineBreak() {
+        val text = "Certified Shit Poster \uD83C\uDF3F | ADHD is My Superpower \uD83D\uDD0B\nToken Gated Telegram: https://guild.xyz/ghostgang100x\n#GhostGang100x @ghostgang100x \uD83C\uDFAB                              "
+        val result = parser.parse(text)
+        assertEquals(7, result.size)
+        assertIs<StringToken>(result[0])
+        assertEquals("Certified Shit Poster \uD83C\uDF3F | ADHD is My Superpower \uD83D\uDD0B\nToken Gated Telegram: ", result[0].value)
+        assertIs<UrlToken>(result[1])
+        assertEquals("https://guild.xyz/ghostgang100x", result[1].value)
+        assertIs<StringToken>(result[2])
+        assertEquals("\n", result[2].value)
+        assertIs<HashTagToken>(result[3])
+        assertEquals("#GhostGang100x", result[3].value)
+        assertIs<StringToken>(result[4])
+        assertEquals(" ", result[4].value)
+        assertIs<UserNameToken>(result[5])
+        assertEquals("@ghostgang100x", result[5].value)
+        assertIs<StringToken>(result[6])
+        assertEquals(" \uD83C\uDFAB                              ", result[6].value)
+    }
 }
