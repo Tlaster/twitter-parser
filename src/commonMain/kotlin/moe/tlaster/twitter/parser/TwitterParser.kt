@@ -4,6 +4,7 @@ class TwitterParser(
     private val enableAcct: Boolean = false,
     private val enableEmoji: Boolean = false,
     private val enableDotInUserName: Boolean = false,
+    private val enableDomainDetection: Boolean = false,
 ) {
     private val urlEscapeChars = listOf(
         '!',
@@ -41,6 +42,7 @@ class TwitterParser(
         MightUrlSlash1,
         InUrl,
         InEmoji,
+        MightDomain,
     }
 
     private enum class Type {
@@ -65,15 +67,19 @@ class TwitterParser(
                             contentBuilder.add(Type.UserName to StringBuilder())
                             State.InUserName
                         }
+
                         enableAcct && state == State.InUserName -> {
                             State.InUserNameAcct
                         }
+
                         enableAcct && state == State.InUserNameAcct -> {
                             accept(contentBuilder)
                         }
+
                         state != State.Content && state != State.InUrl -> {
                             accept(contentBuilder)
                         }
+
                         else -> {
                             state
                         }
@@ -161,6 +167,15 @@ class TwitterParser(
                             accept(contentBuilder)
                         }
 
+                        State.MightDomain -> {
+                            val last = contentBuilder.last().second.split('.').last()
+                            if (UrlToken.Domains.any { it.equals(last, ignoreCase = true) }) {
+                                accept(contentBuilder)
+                            } else {
+                                reject(contentBuilder)
+                            }
+                        }
+
                         else -> state
                     }
                     contentBuilder.last().second.append(char)
@@ -175,6 +190,14 @@ class TwitterParser(
                         State.InHashTag,
                         State.InCashTag,
                         -> accept(contentBuilder)
+                        State.MightDomain -> {
+                            val last = contentBuilder.last().second.split('.').last()
+                            if (UrlToken.Domains.any { it.equals(last, ignoreCase = true) }) {
+                                accept(contentBuilder)
+                            } else {
+                                reject(contentBuilder)
+                            }
+                        }
 
                         else -> state
                     }
@@ -204,6 +227,14 @@ class TwitterParser(
                         State.MightUrlSlash1,
                         -> {
                             reject(contentBuilder)
+                        }
+                        State.MightDomain -> {
+                            val last = contentBuilder.last().second.split('.').last()
+                            if (UrlToken.Domains.any { it.equals(last, ignoreCase = true) }) {
+                                accept(contentBuilder)
+                            } else {
+                                reject(contentBuilder)
+                            }
                         }
                     }
                     state = State.AccSpace
@@ -278,7 +309,39 @@ class TwitterParser(
                         State.MightUrlSlash1,
                         -> state = reject(contentBuilder)
 
-                        else -> Unit
+                        State.MightDomain -> {
+                            val lastContent = contentBuilder.last().second.split('.')
+                            val mightDomain = if (lastContent.size > 1) {
+                                lastContent.last() + char
+                            } else {
+                                char.toString()
+                            }
+                            if (!UrlToken.Domains.any { it.startsWith(mightDomain, ignoreCase = true) }) {
+                                state = reject(contentBuilder)
+                            }
+                        }
+
+                        State.Content,
+                        State.AccSpace,
+                        -> {
+                            if (char == '.' && enableDomainDetection) {
+                                // find string after space in contentBuilder
+                                val lastContent = contentBuilder.last().second.split(' ')
+                                if (lastContent.last().all { it.isLetterOrDigit() }) {
+                                    state = State.MightDomain
+                                    val content = lastContent.last()
+                                    if (contentBuilder.any()) {
+                                        contentBuilder.last().second.deleteRange(
+                                            contentBuilder.last().second.length - content.length,
+                                            contentBuilder.last().second.length
+                                        )
+                                    } else {
+                                        contentBuilder.removeLast()
+                                    }
+                                    contentBuilder.add(Type.Url to StringBuilder(lastContent.last()))
+                                }
+                            }
+                        }
                     }
                     contentBuilder.last().second.append(char)
                 }
@@ -303,7 +366,11 @@ class TwitterParser(
     private fun reject(contentBuilder: ArrayList<Pair<Type, StringBuilder>>): State {
         // Not a valid hashtag/username/cashtag/http/emoji
         val last = contentBuilder.removeLast()
-        contentBuilder.last().second.append(last.second)
+        if (contentBuilder.any()) {
+            contentBuilder.last().second.append(last.second)
+        } else {
+            contentBuilder.add(Type.Content to last.second)
+        }
         return State.Content
     }
 

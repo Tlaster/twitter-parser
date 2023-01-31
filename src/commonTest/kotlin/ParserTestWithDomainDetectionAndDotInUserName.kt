@@ -4,8 +4,8 @@ import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 
-class ParserTest {
-    private val parser = TwitterParser()
+class ParserTestWithDomainDetectionAndDotInUserName {
+    private val parser = TwitterParser(enableDomainDetection = true, enableDotInUserName = true)
 
     @Test
     fun testSimpleTweet() {
@@ -462,9 +462,9 @@ class ParserTest {
         val result = parser.parse(content)
         assertEquals(2, result.size)
         assertIs<UserNameToken>(result[0])
-        assertEquals("@user", result[0].value)
+        assertEquals("@user.name", result[0].value)
         assertIs<StringToken>(result[1])
-        assertEquals(".name: hello", result[1].value)
+        assertEquals(": hello", result[1].value)
     }
 
     @Test
@@ -496,8 +496,10 @@ class ParserTest {
         val domain = "cool.com"
         val content = "$domain: hello"
         val result = parser.parse(content)
-        assertEquals(1, result.size)
-        assertIs<StringToken>(result[0])
-        assertEquals("$domain: hello", result[0].value)
+        assertEquals(2, result.size)
+        assertIs<UrlToken>(result[0])
+        assertEquals(domain, result[0].value)
+        assertIs<StringToken>(result[1])
+        assertEquals(": hello", result[1].value)
     }
 }

@@ -1,4 +1,5 @@
 import java.util.Properties
+import org.jetbrains.kotlin.konan.target.HostManager
 
 plugins {
     kotlin("multiplatform") version "1.7.0"
@@ -26,21 +27,16 @@ kotlin {
         nodejs()
         browser()
     }
-    // detecting the host OS
-    val osName = System.getProperty("os.name").toLowerCase()
-    val isWindows = osName.contains("win")
-    val isMac = osName.contains("mac")
-    val isLinux = osName.contains("nux") || osName.contains("nix") || osName.contains("aix")
-    if (isMac) {
+    if (HostManager.hostIsMac) {
         ios()
         macosX64()
         macosArm64()
     }
-    if (isWindows) {
+    if (HostManager.hostIsMingw) {
         mingwX64()
         mingwX86()
     }
-    if (isLinux) {
+    if (HostManager.hostIsLinux) {
         linuxX64()
         linuxArm64()
         linuxArm32Hfp()

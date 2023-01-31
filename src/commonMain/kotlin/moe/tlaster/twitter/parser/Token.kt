@@ -25,7 +25,11 @@ data class StringToken(
 
 data class UrlToken(
     override val value: String,
-) : Token
+) : Token {
+    companion object {
+        internal val Domains = DomainList
+    }
+}
 
 data class UserNameToken(
     override val value: String,

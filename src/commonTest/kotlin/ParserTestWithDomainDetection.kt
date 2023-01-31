@@ -4,8 +4,8 @@ import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 
-class ParserTest {
-    private val parser = TwitterParser()
+class ParserTestWithDomainDetection {
+    private val parser = TwitterParser(enableDomainDetection = true)
 
     @Test
     fun testSimpleTweet() {
@@ -496,8 +496,86 @@ class ParserTest {
         val domain = "cool.com"
         val content = "$domain: hello"
         val result = parser.parse(content)
+        assertEquals(2, result.size)
+        assertIs<UrlToken>(result[0])
+        assertEquals(domain, result[0].value)
+        assertIs<StringToken>(result[1])
+        assertEquals(": hello", result[1].value)
+    }
+
+    @Test
+    fun testDomainMiddle() {
+        val domain = "cool.com"
+        val content = "asd $domain: hello"
+        val result = parser.parse(content)
+        assertEquals(3, result.size)
+        assertIs<StringToken>(result[0])
+        assertEquals("asd ", result[0].value)
+        assertIs<UrlToken>(result[1])
+        assertEquals(domain, result[1].value)
+        assertIs<StringToken>(result[2])
+        assertEquals(": hello", result[2].value)
+    }
+
+    @Test
+    fun testErrorDomain() {
+        val domain = "cool.asd"
+        val content = "$domain: hello"
+        val result = parser.parse(content)
         assertEquals(1, result.size)
         assertIs<StringToken>(result[0])
         assertEquals("$domain: hello", result[0].value)
+    }
+
+    @Test
+    fun testErrorDomainMiddle() {
+        val domain = "cool.asd"
+        val content = "asd $domain: hello"
+        val result = parser.parse(content)
+        assertEquals(1, result.size)
+        assertIs<StringToken>(result[0])
+        assertEquals("asd $domain: hello", result[0].value)
+    }
+
+    @Test
+    fun testDomainWithAt() {
+        val domain = "cool.com"
+        val content = "asd $domain@: hello"
+        val result = parser.parse(content)
+        assertEquals(3, result.size)
+        assertIs<StringToken>(result[0])
+        assertEquals("asd ", result[0].value)
+        assertIs<UrlToken>(result[1])
+        assertEquals(domain, result[1].value)
+        assertIs<StringToken>(result[2])
+        assertEquals("@: hello", result[2].value)
+    }
+
+    @Test
+    fun testDomainWithCashTag() {
+        val domain = "cool.com"
+        val content = "asd $domain\$hello"
+        val result = parser.parse(content)
+        assertEquals(3, result.size)
+        assertIs<StringToken>(result[0])
+        assertEquals("asd ", result[0].value)
+        assertIs<UrlToken>(result[1])
+        assertEquals(domain, result[1].value)
+        assertIs<StringToken>(result[2])
+        assertEquals("\$hello", result[2].value)
+    }
+
+    @Test
+    fun testDomainWithHashTag() {
+        val domain = "cool.com"
+        val content = "asd $domain#hello"
+        val result = parser.parse(content)
+        assertEquals(3, result.size)
+        assertIs<StringToken>(result[0])
+        assertEquals("asd ", result[0].value)
+        assertIs<UrlToken>(result[1])
+        assertEquals(domain, result[1].value)
+        assertIs<StringToken>(result[2])
+        assertEquals("#hello", result[2].value)
     }
 }
