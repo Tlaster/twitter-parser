@@ -526,4 +526,13 @@ class ParserTestWithDomainDetectionAndDotInUserName {
         assertIs<UrlToken>(result[7])
         assertEquals("0xMoe.art", result[7].value)
     }
+
+    @Test
+    fun testLastDot() {
+        val text = "hello world."
+        val result = parser.parse(text)
+        assertEquals(1, result.size)
+        assertIs<StringToken>(result[0])
+        assertEquals("hello world.", result[0].value)
+    }
 }

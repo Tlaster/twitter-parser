@@ -168,12 +168,7 @@ class TwitterParser(
                         }
 
                         State.MightDomain -> {
-                            val last = contentBuilder.last().second.split('.').last()
-                            if (UrlToken.Domains.any { it.equals(last, ignoreCase = true) }) {
-                                accept(contentBuilder)
-                            } else {
-                                reject(contentBuilder)
-                            }
+                            domainCheck(contentBuilder)
                         }
 
                         else -> state
@@ -191,12 +186,7 @@ class TwitterParser(
                         State.InCashTag,
                         -> accept(contentBuilder)
                         State.MightDomain -> {
-                            val last = contentBuilder.last().second.split('.').last()
-                            if (UrlToken.Domains.any { it.equals(last, ignoreCase = true) }) {
-                                accept(contentBuilder)
-                            } else {
-                                reject(contentBuilder)
-                            }
+                            domainCheck(contentBuilder)
                         }
 
                         else -> state
@@ -229,12 +219,7 @@ class TwitterParser(
                             reject(contentBuilder)
                         }
                         State.MightDomain -> {
-                            val last = contentBuilder.last().second.split('.').last()
-                            if (UrlToken.Domains.any { it.equals(last, ignoreCase = true) }) {
-                                accept(contentBuilder)
-                            } else {
-                                reject(contentBuilder)
-                            }
+                            domainCheck(contentBuilder)
                         }
                     }
                     state = State.AccSpace
@@ -352,6 +337,9 @@ class TwitterParser(
                 }
             }
         }
+        if (state == State.MightDomain) {
+            domainCheck(contentBuilder)
+        }
         return contentBuilder.filter { it.second.isNotEmpty() }.map {
             when (it.first) {
                 Type.Content -> StringToken(it.second.toString())
@@ -365,6 +353,15 @@ class TwitterParser(
                 Type.UserName -> UserNameToken(it.second.toString())
                 Type.Emoji -> EmojiToken(it.second.toString())
             }
+        }
+    }
+
+    private fun domainCheck(contentBuilder: ArrayList<Pair<Type, StringBuilder>>): State {
+        val last = contentBuilder.last().second.split('.').last()
+        return if (UrlToken.Domains.any { it.equals(last, ignoreCase = true) }) {
+            accept(contentBuilder)
+        } else {
+            reject(contentBuilder)
         }
     }
 
