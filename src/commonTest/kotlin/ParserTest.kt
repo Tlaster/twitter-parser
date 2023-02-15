@@ -521,4 +521,13 @@ class ParserTest {
         assertIs<StringToken>(result[6])
         assertEquals(" \uD83C\uDFAB                              ", result[6].value)
     }
+
+    @Test
+    fun testLastH() {
+        val text = "test h"
+        val result = parser.parse(text)
+        assertEquals(1, result.size)
+        assertIs<StringToken>(result[0])
+        assertEquals("test h", result[0].value)
+    }
 }

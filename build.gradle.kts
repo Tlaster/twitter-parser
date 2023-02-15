@@ -29,6 +29,7 @@ kotlin {
     }
     if (HostManager.hostIsMac) {
         ios()
+        iosSimulatorArm64()
         macosX64()
         macosArm64()
     }

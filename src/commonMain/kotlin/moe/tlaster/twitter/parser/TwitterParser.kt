@@ -340,16 +340,24 @@ class TwitterParser(
         if (state == State.MightDomain) {
             domainCheck(contentBuilder)
         }
+        if (state in listOf(
+                State.MightUrlH,
+                State.MightUrlT1,
+                State.MightUrlT2,
+                State.MightUrlS,
+                State.MightUrlP,
+                State.MightUrlDot,
+                State.MightUrlSlash1,
+            )
+        ) {
+            reject(contentBuilder)
+        }
         return contentBuilder.filter { it.second.isNotEmpty() }.map {
             when (it.first) {
                 Type.Content -> StringToken(it.second.toString())
                 Type.HashTag -> HashTagToken(it.second.toString())
                 Type.CashTag -> CashTagToken(it.second.toString())
-                Type.Url -> {
-                    val second = it.second.toString()
-                    UrlToken(second)
-                }
-
+                Type.Url -> UrlToken(it.second.toString())
                 Type.UserName -> UserNameToken(it.second.toString())
                 Type.Emoji -> EmojiToken(it.second.toString())
             }
