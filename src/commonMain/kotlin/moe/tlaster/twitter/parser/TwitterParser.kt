@@ -164,7 +164,7 @@ class TwitterParser(
                         }
 
                         State.InUrl -> {
-                            accept(contentBuilder)
+                            urlCheck(contentBuilder)
                         }
 
                         State.MightDomain -> {
@@ -185,6 +185,7 @@ class TwitterParser(
                         State.InHashTag,
                         State.InCashTag,
                         -> accept(contentBuilder)
+
                         State.MightDomain -> {
                             domainCheck(contentBuilder)
                         }
@@ -202,9 +203,11 @@ class TwitterParser(
                         State.InUserNameAcct,
                         State.InHashTag,
                         State.InCashTag,
-                        State.InUrl,
                         -> {
                             accept(contentBuilder)
+                        }
+                        State.InUrl -> {
+                            urlCheck(contentBuilder)
                         }
 
                         State.InEmoji,
@@ -218,6 +221,7 @@ class TwitterParser(
                         -> {
                             reject(contentBuilder)
                         }
+
                         State.MightDomain -> {
                             domainCheck(contentBuilder)
                         }
@@ -281,7 +285,7 @@ class TwitterParser(
 
                         State.InUrl -> {
                             if (char in urlEscapeChars) {
-                                state = accept(contentBuilder)
+                                state = urlCheck(contentBuilder)
                             }
                         }
 
@@ -352,6 +356,9 @@ class TwitterParser(
         ) {
             reject(contentBuilder)
         }
+        if (state == State.InUrl) {
+            urlCheck(contentBuilder)
+        }
         return contentBuilder.filter { it.second.isNotEmpty() }.map {
             when (it.first) {
                 Type.Content -> StringToken(it.second.toString())
@@ -371,6 +378,16 @@ class TwitterParser(
         } else {
             reject(contentBuilder)
         }
+    }
+
+    private fun urlCheck(contentBuilder: ArrayList<Pair<Type, StringBuilder>>): State {
+        // check if url is valid
+        val last = contentBuilder.last().second
+        if (!last.contains('.')) {
+            return reject(contentBuilder)
+        }
+        // TODO: check if url is valid
+        return accept(contentBuilder)
     }
 
     private fun reject(contentBuilder: ArrayList<Pair<Type, StringBuilder>>): State {
