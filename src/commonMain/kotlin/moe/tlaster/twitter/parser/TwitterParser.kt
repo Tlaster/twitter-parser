@@ -342,33 +342,7 @@ class TwitterParser(
                 }
             }
         }
-        if (state == State.MightDomain) {
-            domainCheck(contentBuilder)
-        } else if (state in listOf(
-                State.MightUrlH,
-                State.MightUrlT1,
-                State.MightUrlT2,
-                State.MightUrlS,
-                State.MightUrlP,
-                State.MightUrlDot,
-                State.MightUrlSlash1,
-            )
-        ) {
-            reject(contentBuilder)
-        } else if (state in listOf(
-                State.InCashTag,
-                State.InHashTag,
-                State.InUserName,
-            ) && contentBuilder.last().second.length == 1
-        ) {
-            reject(contentBuilder)
-        } else if (state == State.InUrl) {
-            urlCheck(contentBuilder)
-        } else if (state == State.InEmoji) {
-            emojiCheck(contentBuilder)
-        } else if (state == State.InUserNameAcct && contentBuilder.last().second.last() in UserNameToken.Tags) {
-            reject(contentBuilder)
-        }
+        endCheck(state, contentBuilder)
 
         return contentBuilder.filter { it.second.isNotEmpty() }.map {
             when (it.first) {
@@ -379,6 +353,54 @@ class TwitterParser(
                 Type.UserName -> UserNameToken(it.second.toString())
                 Type.Emoji -> EmojiToken(it.second.toString())
             }
+        }
+    }
+
+    private fun endCheck(
+        state: State,
+        contentBuilder: ArrayList<Pair<Type, StringBuilder>>,
+    ) {
+        when (state) {
+            State.MightDomain -> {
+                domainCheck(contentBuilder)
+            }
+
+            State.MightUrlH,
+            State.MightUrlT1,
+            State.MightUrlT2,
+            State.MightUrlS,
+            State.MightUrlP,
+            State.MightUrlDot,
+            State.MightUrlSlash1,
+            -> {
+                reject(contentBuilder)
+            }
+
+            State.InCashTag,
+            State.InHashTag,
+            State.InUserName,
+            -> {
+                if (contentBuilder.last().second.length == 1) {
+                    reject(contentBuilder)
+                }
+            }
+
+            State.InUrl -> {
+                urlCheck(contentBuilder)
+            }
+
+            State.InEmoji -> {
+                emojiCheck(contentBuilder)
+            }
+
+            State.InUserNameAcct -> {
+                if (contentBuilder.last().second.last() in UserNameToken.Tags) {
+                    reject(contentBuilder)
+                }
+            }
+
+            State.AccSpace -> Unit
+            State.Content -> Unit
         }
     }
 
