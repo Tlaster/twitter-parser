@@ -206,6 +206,7 @@ class TwitterParser(
                         -> {
                             accept(contentBuilder)
                         }
+
                         State.InUrl -> {
                             urlCheck(contentBuilder)
                         }
@@ -343,8 +344,7 @@ class TwitterParser(
         }
         if (state == State.MightDomain) {
             domainCheck(contentBuilder)
-        }
-        if (state in listOf(
+        } else if (state in listOf(
                 State.MightUrlH,
                 State.MightUrlT1,
                 State.MightUrlT2,
@@ -355,10 +355,21 @@ class TwitterParser(
             )
         ) {
             reject(contentBuilder)
-        }
-        if (state == State.InUrl) {
+        } else if (state in listOf(
+                State.InCashTag,
+                State.InHashTag,
+                State.InUserName,
+            ) && contentBuilder.last().second.length == 1
+        ) {
+            reject(contentBuilder)
+        } else if (state == State.InUrl) {
             urlCheck(contentBuilder)
+        } else if (state == State.InEmoji) {
+            emojiCheck(contentBuilder)
+        } else if (state == State.InUserNameAcct && contentBuilder.last().second.last() in UserNameToken.Tags) {
+            reject(contentBuilder)
         }
+
         return contentBuilder.filter { it.second.isNotEmpty() }.map {
             when (it.first) {
                 Type.Content -> StringToken(it.second.toString())
@@ -368,6 +379,15 @@ class TwitterParser(
                 Type.UserName -> UserNameToken(it.second.toString())
                 Type.Emoji -> EmojiToken(it.second.toString())
             }
+        }
+    }
+
+    private fun emojiCheck(contentBuilder: ArrayList<Pair<Type, StringBuilder>>) {
+        val last = contentBuilder.last().second
+        if (last.startsWith(":") && last.endsWith(":")) {
+            accept(contentBuilder)
+        } else {
+            reject(contentBuilder)
         }
     }
 

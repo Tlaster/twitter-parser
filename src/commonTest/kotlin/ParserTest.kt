@@ -539,4 +539,13 @@ class ParserTest {
         assertIs<StringToken>(result[0])
         assertEquals("test http://test", result[0].value)
     }
+
+    @Test
+    fun testFakeCashTag() {
+        val text = "test $"
+        val result = parser.parse(text)
+        assertEquals(1, result.size)
+        assertIs<StringToken>(result[0])
+        assertEquals("test $", result[0].value)
+    }
 }
