@@ -346,7 +346,7 @@ class TwitterParser(
 
         return contentBuilder.filter { it.second.isNotEmpty() }.map {
             when (it.first) {
-                Type.Content -> StringToken(it.second.toString())
+                Type.Content -> StringToken(it.second.toString().replaceHtmlEntities())
                 Type.HashTag -> HashTagToken(it.second.toString())
                 Type.CashTag -> CashTagToken(it.second.toString())
                 Type.Url -> UrlToken(it.second.toString())
@@ -355,6 +355,10 @@ class TwitterParser(
             }
         }
     }
+
+    private fun String.replaceHtmlEntities() = this.replace("&gt;", ">")
+            .replace("&lt;", "<")
+            .replace("&amp;", "&")
 
     private fun endCheck(
         state: State,

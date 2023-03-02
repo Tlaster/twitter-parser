@@ -548,4 +548,13 @@ class ParserTest {
         assertIs<StringToken>(result[0])
         assertEquals("test $", result[0].value)
     }
+
+    @Test
+    fun testHtmlEntities() {
+        val text = "test &amp; &lt; &gt; &gt;"
+        val result = parser.parse(text)
+        assertEquals(1, result.size)
+        assertIs<StringToken>(result[0])
+        assertEquals("test & < > >", result[0].value)
+    }
 }
