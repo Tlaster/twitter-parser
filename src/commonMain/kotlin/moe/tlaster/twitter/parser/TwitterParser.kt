@@ -40,6 +40,7 @@ class TwitterParser(
         MightUrlP,
         MightUrlDot,
         MightUrlSlash1,
+        MightUrlPort,
         InUrl,
         InEmoji,
         MightDomain,
@@ -164,7 +165,7 @@ class TwitterParser(
                         }
 
                         State.InUrl -> {
-                            urlCheck(contentBuilder)
+                            urlPortCheck(contentBuilder)
                         }
 
                         State.MightDomain -> {
@@ -219,6 +220,7 @@ class TwitterParser(
                         State.MightUrlP,
                         State.MightUrlDot,
                         State.MightUrlSlash1,
+                        State.MightUrlPort,
                         -> {
                             reject(contentBuilder)
                         }
@@ -299,6 +301,12 @@ class TwitterParser(
                         State.MightUrlSlash1,
                         -> state = reject(contentBuilder)
 
+                        State.MightUrlPort -> {
+                            if (char !in '0'..'9') {
+                                state = accept(contentBuilder)
+                            }
+                        }
+
                         State.MightDomain -> {
                             val lastContent = contentBuilder.last().second.split('.')
                             val mightDomain = if (lastContent.size > 1) {
@@ -372,6 +380,7 @@ class TwitterParser(
             State.MightUrlP,
             State.MightUrlDot,
             State.MightUrlSlash1,
+            State.MightUrlPort,
             -> {
                 reject(contentBuilder)
             }
@@ -420,6 +429,17 @@ class TwitterParser(
         } else {
             reject(contentBuilder)
         }
+    }
+
+    private fun urlPortCheck(contentBuilder: ArrayList<Pair<Type, StringBuilder>>): State {
+        val last = contentBuilder.last().second
+        if (
+            last.indexOf(':', startIndex = "https://".length) < 0 &&
+            last.indexOf('/', startIndex = "https://".length) < 0
+            ) {
+            return State.MightUrlPort
+        }
+        return urlCheck(contentBuilder)
     }
 
     private fun urlCheck(contentBuilder: ArrayList<Pair<Type, StringBuilder>>): State {

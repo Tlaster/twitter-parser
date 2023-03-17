@@ -453,4 +453,18 @@ class ParserWithAcctTest {
         assertIs<StringToken>(result[0])
         assertEquals("hello $emoji", result[0].value)
     }
+
+    @Test
+    fun testUrlPort() {
+        val url = "http://127.0.0.1:8000"
+        val content = "test${url}end"
+        val result = parser.parse(content)
+        assertEquals(3, result.size)
+        assertIs<StringToken>(result[0])
+        assertEquals("test", result[0].value)
+        assertIs<UrlToken>(result[1])
+        assertEquals(url, result[1].value)
+        assertIs<StringToken>(result[2])
+        assertEquals("end", result[2].value)
+    }
 }
