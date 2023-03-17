@@ -433,7 +433,10 @@ class TwitterParser(
 
     private fun urlPortCheck(contentBuilder: ArrayList<Pair<Type, StringBuilder>>): State {
         val last = contentBuilder.last().second
-        if (last.indexOf(':', startIndex = "https://".length) < 0) {
+        if (
+            last.indexOf(':', startIndex = "https://".length) < 0 &&
+            last.indexOf('/', startIndex = "https://".length) < 0
+            ) {
             return State.MightUrlPort
         }
         return urlCheck(contentBuilder)
