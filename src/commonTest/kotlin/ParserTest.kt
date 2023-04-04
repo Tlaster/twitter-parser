@@ -503,11 +503,15 @@ class ParserTest {
 
     @Test
     fun testUrlWithLineBreak() {
-        val text = "Certified Shit Poster \uD83C\uDF3F | ADHD is My Superpower \uD83D\uDD0B\nToken Gated Telegram: https://guild.xyz/ghostgang100x\n#GhostGang100x @ghostgang100x \uD83C\uDFAB                              "
+        val text =
+            "Certified Shit Poster \uD83C\uDF3F | ADHD is My Superpower \uD83D\uDD0B\nToken Gated Telegram: https://guild.xyz/ghostgang100x\n#GhostGang100x @ghostgang100x \uD83C\uDFAB                              "
         val result = parser.parse(text)
         assertEquals(7, result.size)
         assertIs<StringToken>(result[0])
-        assertEquals("Certified Shit Poster \uD83C\uDF3F | ADHD is My Superpower \uD83D\uDD0B\nToken Gated Telegram: ", result[0].value)
+        assertEquals(
+            "Certified Shit Poster \uD83C\uDF3F | ADHD is My Superpower \uD83D\uDD0B\nToken Gated Telegram: ",
+            result[0].value
+        )
         assertIs<UrlToken>(result[1])
         assertEquals("https://guild.xyz/ghostgang100x", result[1].value)
         assertIs<StringToken>(result[2])
@@ -541,6 +545,19 @@ class ParserTest {
     }
 
     @Test
+    fun testUrlWithEscapes() {
+        val text = "test http://test.com?test=[1&test2=2 haha"
+        val result = parser.parse(text)
+        assertEquals(3, result.size)
+        assertIs<StringToken>(result[0])
+        assertEquals("test ", result[0].value)
+        assertIs<UrlToken>(result[1])
+        assertEquals("http://test.com?test=", result[1].value)
+        assertIs<StringToken>(result[2])
+        assertEquals("[1&test2=2 haha", result[2].value)
+    }
+
+    @Test
     fun testFakeCashTag() {
         val text = "test $"
         val result = parser.parse(text)
@@ -565,5 +582,139 @@ class ParserTest {
         assertEquals(1, result.size)
         assertIs<StringToken>(result[0])
         assertEquals("test #: $: @: haha", result[0].value)
+    }
+
+    @Test
+    fun testFakeTags3() {
+        val text = "test #/ $/ @/ haha"
+        val result = parser.parse(text)
+        assertEquals(1, result.size)
+        assertIs<StringToken>(result[0])
+        assertEquals("test #/ $/ @/ haha", result[0].value)
+    }
+
+    @Test
+    fun testHashTagWithSpecialChar() {
+        val text = "test #haha!"
+        val result = parser.parse(text)
+        assertEquals(3, result.size)
+        assertIs<StringToken>(result[0])
+        assertEquals("test ", result[0].value)
+        assertIs<HashTagToken>(result[1])
+        assertEquals("#haha", result[1].value)
+        assertIs<StringToken>(result[2])
+        assertEquals("!", result[2].value)
+    }
+
+    @Test
+    fun testHashTagWithUnderLine() {
+        val text = "test #haha_"
+        val result = parser.parse(text)
+        assertEquals(2, result.size)
+        assertIs<StringToken>(result[0])
+        assertEquals("test ", result[0].value)
+        assertIs<HashTagToken>(result[1])
+        assertEquals("#haha_", result[1].value)
+    }
+
+
+    @Test
+    fun testUrlPort() {
+        val url = "http://127.0.0.1:8000"
+        val content = "test${url}end"
+        val result = parser.parse(content)
+        assertEquals(3, result.size)
+        assertIs<StringToken>(result[0])
+        assertEquals("test", result[0].value)
+        assertIs<UrlToken>(result[1])
+        assertEquals(url, result[1].value)
+        assertIs<StringToken>(result[2])
+        assertEquals("end", result[2].value)
+    }
+
+
+    @Test
+    fun testFakeUrlPort() {
+        val url = "http://127.0.0.1"
+        val content = "test${url}:testend"
+        val result = parser.parse(content)
+        assertEquals(3, result.size)
+        assertIs<StringToken>(result[0])
+        assertEquals("test", result[0].value)
+        assertIs<UrlToken>(result[1])
+        assertEquals(url, result[1].value)
+        assertIs<StringToken>(result[2])
+        assertEquals(":testend", result[2].value)
+    }
+
+    @Test
+    fun testFakeUrlPort2() {
+        val url = "http://127.0.0.1"
+        val content = "test${url}:hestend"
+        val result = parser.parse(content)
+        assertEquals(3, result.size)
+        assertIs<StringToken>(result[0])
+        assertEquals("test", result[0].value)
+        assertIs<UrlToken>(result[1])
+        assertEquals(url, result[1].value)
+        assertIs<StringToken>(result[2])
+        assertEquals(":hestend", result[2].value)
+    }
+
+    @Test
+    fun testFakeUrlPort3() {
+        val url = "http://127.0.0.1"
+        val content = "test${url}:sestend"
+        val result = parser.parse(content)
+        assertEquals(3, result.size)
+        assertIs<StringToken>(result[0])
+        assertEquals("test", result[0].value)
+        assertIs<UrlToken>(result[1])
+        assertEquals(url, result[1].value)
+        assertIs<StringToken>(result[2])
+        assertEquals(":sestend", result[2].value)
+    }
+
+    @Test
+    fun testFakeUrlPort4() {
+        val url = "http://127.0.0.1"
+        val content = "test${url}:pestend"
+        val result = parser.parse(content)
+        assertEquals(3, result.size)
+        assertIs<StringToken>(result[0])
+        assertEquals("test", result[0].value)
+        assertIs<UrlToken>(result[1])
+        assertEquals(url, result[1].value)
+        assertIs<StringToken>(result[2])
+        assertEquals(":pestend", result[2].value)
+    }
+
+
+    @Test
+    fun testFakeUrlPortWithSpace() {
+        val url = "http://127.0.0.1"
+        val content = "test${url}: estend"
+        val result = parser.parse(content)
+        assertEquals(3, result.size)
+        assertIs<StringToken>(result[0])
+        assertEquals("test", result[0].value)
+        assertIs<UrlToken>(result[1])
+        assertEquals(url, result[1].value)
+        assertIs<StringToken>(result[2])
+        assertEquals(": estend", result[2].value)
+    }
+
+    @Test
+    fun testFakeUrlPortWithSlash() {
+        val url = "http://127.0.0.1"
+        val content = "test${url}:/estend"
+        val result = parser.parse(content)
+        assertEquals(3, result.size)
+        assertIs<StringToken>(result[0])
+        assertEquals("test", result[0].value)
+        assertIs<UrlToken>(result[1])
+        assertEquals(url, result[1].value)
+        assertIs<StringToken>(result[2])
+        assertEquals(":/estend", result[2].value)
     }
 }

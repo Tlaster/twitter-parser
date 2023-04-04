@@ -466,4 +466,91 @@ class ParserTestWithEmojiAndAcct {
         assertIs<StringToken>(result[0])
         assertEquals(content, result[0].value)
     }
+
+    @Test
+    fun testAcctAroundUserName2() {
+        val userName = "@user@"
+        val content = "$userName hello"
+        val result = parser.parse(content)
+        assertEquals(1, result.size)
+        assertIs<StringToken>(result[0])
+        assertEquals(content, result[0].value)
+    }
+
+    @Test
+    fun testAcctWithDoubleAt() {
+        val userName = "@user@@domain"
+        val content = "$userName: hello"
+        val result = parser.parse(content)
+        assertEquals(1, result.size)
+        assertIs<StringToken>(result[0])
+        assertEquals(content, result[0].value)
+    }
+
+    @Test
+    fun testAcctWithAtAtLast() {
+        val userName = "@user@domain"
+        val content = "$userName@: hello"
+        val result = parser.parse(content)
+        assertEquals(2, result.size)
+        assertIs<UserNameToken>(result[0])
+        assertEquals(userName, result[0].value)
+        assertIs<StringToken>(result[1])
+        assertEquals("@: hello", result[1].value)
+    }
+
+    @Test
+    fun testAcctWithSlash() {
+        val userName = "@user@domain"
+        val content = "$userName/: hello"
+        val result = parser.parse(content)
+        assertEquals(2, result.size)
+        assertIs<UserNameToken>(result[0])
+        assertEquals(userName, result[0].value)
+        assertIs<StringToken>(result[1])
+        assertEquals("/: hello", result[1].value)
+    }
+
+    @Test
+    fun testFakeAcctWithSlash() {
+        val userName = "@user@/"
+        val content = "${userName}domain: hello"
+        val result = parser.parse(content)
+        assertEquals(1, result.size)
+        assertIs<StringToken>(result[0])
+        assertEquals(content, result[0].value)
+    }
+
+    @Test
+    fun testAcctOnly() {
+        val userName = "@user@"
+        val content = "$userName"
+        val result = parser.parse(content)
+        assertEquals(1, result.size)
+        assertIs<StringToken>(result[0])
+        assertEquals(content, result[0].value)
+    }
+
+    @Test
+    fun testAcctWithSpecialChars() {
+        val userName = "@user@domain"
+        val content = "$userName!: hello"
+        val result = parser.parse(content)
+        assertEquals(2, result.size)
+        assertIs<UserNameToken>(result[0])
+        assertEquals(userName, result[0].value)
+        assertIs<StringToken>(result[1])
+        assertEquals("!: hello", result[1].value)
+    }
+
+    @Test
+    fun testFakeAcctWithSpecialChars() {
+        val userName = "@user@"
+        val content = "${userName}!: hello"
+        val result = parser.parse(content)
+        assertEquals(1, result.size)
+        assertIs<StringToken>(result[0])
+        assertEquals(content, result[0].value)
+    }
+
 }

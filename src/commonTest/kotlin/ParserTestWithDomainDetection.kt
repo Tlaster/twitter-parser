@@ -578,4 +578,35 @@ class ParserTestWithDomainDetection {
         assertIs<StringToken>(result[2])
         assertEquals("#hello", result[2].value)
     }
+
+    @Test
+    fun testFakeDomain() {
+        val domain = "cool."
+        val content = "$domain hello"
+        val result = parser.parse(content)
+        assertEquals(1, result.size)
+        assertIs<StringToken>(result[0])
+        assertEquals("$domain hello", result[0].value)
+    }
+
+
+    @Test
+    fun testFakeDomainWithSlash() {
+        val domain = "cool./"
+        val content = "$domain hello"
+        val result = parser.parse(content)
+        assertEquals(1, result.size)
+        assertIs<StringToken>(result[0])
+        assertEquals("$domain hello", result[0].value)
+    }
+
+    @Test
+    fun testDotStartingDomain() {
+        val domain = ".cool.com"
+        val content = "$domain hello"
+        val result = parser.parse(content)
+        assertEquals(1, result.size)
+        assertIs<StringToken>(result[0])
+        assertEquals("$domain hello", result[0].value)
+    }
 }

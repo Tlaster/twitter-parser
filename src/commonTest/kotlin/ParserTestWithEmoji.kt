@@ -456,4 +456,51 @@ class ParserTestWithEmoji {
         assertIs<EmojiToken>(result[1])
         assertEquals(emoji, result[1].value)
     }
+
+    @Test
+    fun testFakeEmoji() {
+        val emoji = ":smile"
+        val content = "hello $emoji"
+        val result = parser.parse(content)
+        assertEquals(1, result.size)
+        assertIs<StringToken>(result[0])
+        assertEquals("hello :smile", result[0].value)
+    }
+
+    @Test
+    fun testFakeEmojiWithSpecialChar() {
+        val emoji = ":smile"
+        val content = "hello $emoji!"
+        val result = parser.parse(content)
+        assertEquals(1, result.size)
+        assertIs<StringToken>(result[0])
+        assertEquals("hello :smile!", result[0].value)
+    }
+
+
+    @Test
+    fun testEmojiWithSpecialChar() {
+        val emoji = ":smile:"
+        val content = "hello $emoji!"
+        val result = parser.parse(content)
+        assertEquals(3, result.size)
+        assertIs<StringToken>(result[0])
+        assertEquals("hello ", result[0].value)
+        assertIs<EmojiToken>(result[1])
+        assertEquals(emoji, result[1].value)
+        assertIs<StringToken>(result[2])
+        assertEquals("!", result[2].value)
+    }
+
+    @Test
+    fun testEmojiWithUnderLine() {
+        val emoji = ":smile_cat:"
+        val content = "hello $emoji"
+        val result = parser.parse(content)
+        assertEquals(2, result.size)
+        assertIs<StringToken>(result[0])
+        assertEquals("hello ", result[0].value)
+        assertIs<EmojiToken>(result[1])
+        assertEquals(emoji, result[1].value)
+    }
 }

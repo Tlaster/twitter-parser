@@ -78,7 +78,7 @@ class TwitterParser(
                         }
 
                         enableAcct && state == State.InUserNameAcct -> {
-                            accept(contentBuilder)
+                            userAcctCheck(contentBuilder)
                         }
 
                         state != State.Content && state != State.InUrl -> {
@@ -117,9 +117,16 @@ class TwitterParser(
                 }
 
                 'h', 'H' -> {
-                    if (state == State.Content || state == State.AccSpace) {
-                        state = State.MightUrlH
-                        contentBuilder.add(Type.Url to StringBuilder())
+                    state = when (state) {
+                        State.Content, State.AccSpace -> {
+                            contentBuilder.add(Type.Url to StringBuilder())
+                            State.MightUrlH
+                        }
+                        State.MightUrlPort,
+                        -> {
+                            urlPortCheck(contentBuilder)
+                        }
+                        else -> state
                     }
                     contentBuilder.last().second.append(char)
                 }
@@ -128,6 +135,10 @@ class TwitterParser(
                     state = when (state) {
                         State.MightUrlH -> State.MightUrlT1
                         State.MightUrlT1 -> State.MightUrlT2
+                        State.MightUrlPort,
+                        -> {
+                            urlPortCheck(contentBuilder)
+                        }
                         else -> state
                     }
                     contentBuilder.last().second.append(char)
@@ -136,6 +147,10 @@ class TwitterParser(
                 'p', 'P' -> {
                     state = when (state) {
                         State.MightUrlT2 -> State.MightUrlP
+                        State.MightUrlPort,
+                        -> {
+                            urlPortCheck(contentBuilder)
+                        }
                         else -> state
                     }
                     contentBuilder.last().second.append(char)
@@ -144,6 +159,10 @@ class TwitterParser(
                 's', 'S' -> {
                     state = when (state) {
                         State.MightUrlP -> State.MightUrlS
+                        State.MightUrlPort,
+                        -> {
+                            urlPortCheck(contentBuilder)
+                        }
                         else -> state
                     }
                     contentBuilder.last().second.append(char)
@@ -157,6 +176,7 @@ class TwitterParser(
                         -> {
                             userAcctCheck(contentBuilder)
                         }
+
                         State.InUserName,
                         State.InCashTag,
                         State.InHashTag,
@@ -174,7 +194,15 @@ class TwitterParser(
                         }
 
                         State.InUrl -> {
-                            urlPortCheck(contentBuilder)
+                            val last = contentBuilder.last().second
+                            if (
+                                last.indexOf(':', startIndex = "https://".length) < 0 &&
+                                last.indexOf('/', startIndex = "https://".length) < 0
+                            ) {
+                                State.MightUrlPort
+                            } else {
+                                urlCheck(contentBuilder)
+                            }
                         }
 
                         State.MightDomain -> {
@@ -194,6 +222,7 @@ class TwitterParser(
                         -> {
                             userAcctCheck(contentBuilder)
                         }
+
                         State.InUserName,
                         State.InHashTag,
                         State.InCashTag,
@@ -203,6 +232,10 @@ class TwitterParser(
 
                         State.MightDomain -> {
                             domainCheck(contentBuilder)
+                        }
+                        State.MightUrlPort,
+                        -> {
+                            urlPortCheck(contentBuilder)
                         }
 
                         else -> state
@@ -238,9 +271,13 @@ class TwitterParser(
                         State.MightUrlP,
                         State.MightUrlDot,
                         State.MightUrlSlash1,
-                        State.MightUrlPort,
                         -> {
                             reject(contentBuilder)
+                        }
+
+                        State.MightUrlPort,
+                        -> {
+                            urlPortCheck(contentBuilder)
                         }
 
                         State.MightDomain -> {
@@ -275,32 +312,20 @@ class TwitterParser(
 
                         State.InEmoji -> {
                             if (!char.isLetterOrDigit() && char != '_') {
-                                state = if (contentBuilder.last().second.last() in EmojiToken.Tags) {
-                                    reject(contentBuilder)
-                                } else {
-                                    accept(contentBuilder)
-                                }
+                                state = emojiCheck(contentBuilder)
                             }
                         }
 
 
                         State.InHashTag -> {
                             if (!char.isLetterOrDigit() && char != '_') {
-                                state = if (contentBuilder.last().second.last() in HashTagToken.Tags) {
-                                    reject(contentBuilder)
-                                } else {
-                                    accept(contentBuilder)
-                                }
+                                state = accept(contentBuilder)
                             }
                         }
 
                         State.InCashTag -> {
                             if (!letters.contains(char)) {
-                                state = if (contentBuilder.last().second.last() in CashTagToken.Tags) {
-                                    reject(contentBuilder)
-                                } else {
-                                    accept(contentBuilder)
-                                }
+                                state = reject(contentBuilder)
                             }
                         }
 
@@ -323,7 +348,7 @@ class TwitterParser(
 
                         State.MightUrlPort -> {
                             if (char !in '0'..'9') {
-                                state = accept(contentBuilder)
+                                state = urlPortCheck(contentBuilder)
                             }
                         }
 
@@ -409,9 +434,7 @@ class TwitterParser(
             State.InHashTag,
             State.InUserName,
             -> {
-                if (contentBuilder.last().second.length == 1) {
-                    reject(contentBuilder)
-                }
+                lengthCheck(contentBuilder)
             }
 
             State.InUrl -> {
@@ -423,9 +446,7 @@ class TwitterParser(
             }
 
             State.InUserNameAcct -> {
-                if (contentBuilder.last().second.last() in UserNameToken.Tags) {
-                    reject(contentBuilder)
-                }
+                userAcctCheck(contentBuilder)
             }
 
             State.AccSpace -> Unit
@@ -471,13 +492,14 @@ class TwitterParser(
 
     private fun urlPortCheck(contentBuilder: ArrayList<Pair<Type, StringBuilder>>): State {
         val last = contentBuilder.last().second
-        if (
-            last.indexOf(':', startIndex = "https://".length) < 0 &&
-            last.indexOf('/', startIndex = "https://".length) < 0
-        ) {
-            return State.MightUrlPort
+        return if (last.lastIndexOf(':') != last.lastIndex) {
+            accept(contentBuilder)
+        } else {
+            last.deleteAt(last.lastIndex)
+            val nextState = accept(contentBuilder)
+            contentBuilder.last().second.append(":")
+            nextState
         }
-        return urlCheck(contentBuilder)
     }
 
     private fun urlCheck(contentBuilder: ArrayList<Pair<Type, StringBuilder>>): State {
