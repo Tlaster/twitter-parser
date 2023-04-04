@@ -3,6 +3,7 @@ import org.jetbrains.kotlin.konan.target.HostManager
 
 plugins {
     kotlin("multiplatform") version "1.8.0"
+    id("org.jetbrains.kotlinx.kover") version "0.7.0-Alpha"
     id("maven-publish")
     id("signing")
 }
