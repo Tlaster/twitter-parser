@@ -5,6 +5,7 @@ class TwitterParser(
     private val enableEmoji: Boolean = false,
     private val enableDotInUserName: Boolean = false,
     private val enableDomainDetection: Boolean = false,
+    private val enableNonAsciiInUrl: Boolean = true,
 ) {
     private val urlEscapeChars = listOf(
         '!',
@@ -25,6 +26,9 @@ class TwitterParser(
     private val letters = ('a'..'z') + ('A'..'Z')
 
     private val userNameCharList = letters + digits + '_'
+    private val urlCharList = letters + digits + listOf(
+        '.', '@', ':', '%', '_', '\\', '+', '~', '#', '?', '&', '/', '='
+    )
 
     private enum class State {
         AccSpace,
@@ -289,6 +293,8 @@ class TwitterParser(
                         State.InUrl -> {
                             if (char in urlEscapeChars) {
                                 state = urlCheck(contentBuilder)
+                            } else if (!enableNonAsciiInUrl && char !in urlCharList) {
+                                state = accept(contentBuilder)
                             }
                         }
 
