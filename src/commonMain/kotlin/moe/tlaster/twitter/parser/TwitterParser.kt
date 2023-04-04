@@ -26,7 +26,9 @@ class TwitterParser(
     private val letters = ('a'..'z') + ('A'..'Z')
 
     private val userNameCharList = letters + digits + '_'
-    private val urlCharList = letters + digits + "@:%_\\+.~#?&/="
+    private val urlCharList = letters + digits + listOf(
+        '.', '@', ':', '%', '_', '\\', '+', '~', '#', '?', '&', '/', '='
+    )
 
     private enum class State {
         AccSpace,
