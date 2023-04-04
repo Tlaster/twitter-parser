@@ -717,4 +717,18 @@ class ParserTest {
         assertIs<StringToken>(result[2])
         assertEquals(":/estend", result[2].value)
     }
+
+    @Test
+    fun testUrlPortWithQuery() {
+        val url = "http://test.com:8000?test=1&test2=2"
+        val content = "test ${url} end"
+        val result = parser.parse(content)
+        assertEquals(3, result.size)
+        assertIs<StringToken>(result[0])
+        assertEquals("test ", result[0].value)
+        assertIs<UrlToken>(result[1])
+        assertEquals(url, result[1].value)
+        assertIs<StringToken>(result[2])
+        assertEquals(" end", result[2].value)
+    }
 }

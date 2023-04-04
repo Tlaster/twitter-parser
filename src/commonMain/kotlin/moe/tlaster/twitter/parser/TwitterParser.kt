@@ -347,7 +347,9 @@ class TwitterParser(
                         -> state = reject(contentBuilder)
 
                         State.MightUrlPort -> {
-                            if (char !in '0'..'9') {
+                            if (char == '?') {
+                                state = State.InUrl
+                            } else if (char !in '0'..'9') {
                                 state = urlPortCheck(contentBuilder)
                             }
                         }
