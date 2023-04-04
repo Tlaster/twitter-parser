@@ -492,6 +492,19 @@ class ParserTestWithDomainDetectionAndDotInUserName {
     }
 
     @Test
+    fun testURlWithChinese() {
+        val url = "https://test.com"
+        val text = "${url}额额额额"
+        val nonAsciiInUrlParser = TwitterParser(enableNonAsciiInUrl = false)
+        val result = nonAsciiInUrlParser.parse(text)
+        assertEquals(2, result.size)
+        assertIs<UrlToken>(result[0])
+        assertEquals(url, result[0].value)
+        assertIs<StringToken>(result[1])
+        assertEquals("额额额额", result[1].value)
+    }
+
+    @Test
     fun testDomain() {
         val domain = "cool.com"
         val content = "$domain: hello"
