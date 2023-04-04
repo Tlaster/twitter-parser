@@ -2,7 +2,7 @@ import java.util.Properties
 import org.jetbrains.kotlin.konan.target.HostManager
 
 plugins {
-    kotlin("multiplatform") version "1.7.0"
+    kotlin("multiplatform") version "1.8.0"
     id("maven-publish")
     id("signing")
 }
