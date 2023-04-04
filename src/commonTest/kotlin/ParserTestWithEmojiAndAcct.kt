@@ -456,4 +456,14 @@ class ParserTestWithEmojiAndAcct {
         assertIs<EmojiToken>(result[1])
         assertEquals(emoji, result[1].value)
     }
+
+    @Test
+    fun testAcctAroundUserName() {
+        val userName = "@user@"
+        val content = "$userName: hello"
+        val result = parser.parse(content)
+        assertEquals(1, result.size)
+        assertIs<StringToken>(result[0])
+        assertEquals(content, result[0].value)
+    }
 }

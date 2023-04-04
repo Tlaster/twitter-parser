@@ -149,11 +149,16 @@ class TwitterParser(
                     state = when (state) {
                         State.MightUrlP -> State.MightUrlDot
                         State.MightUrlS -> State.MightUrlDot
-                        State.InUserName,
                         State.InUserNameAcct,
+                        -> {
+                            userAcctCheck(contentBuilder)
+                        }
+                        State.InUserName,
                         State.InCashTag,
                         State.InHashTag,
-                        -> accept(contentBuilder)
+                        -> {
+                            lengthCheck(contentBuilder)
+                        }
 
                         State.AccSpace -> {
                             if (enableEmoji) {
@@ -181,11 +186,16 @@ class TwitterParser(
                     state = when (state) {
                         State.MightUrlDot -> State.MightUrlSlash1
                         State.MightUrlSlash1 -> State.InUrl
-                        State.InUserName,
                         State.InUserNameAcct,
+                        -> {
+                            userAcctCheck(contentBuilder)
+                        }
+                        State.InUserName,
                         State.InHashTag,
                         State.InCashTag,
-                        -> accept(contentBuilder)
+                        -> {
+                            lengthCheck(contentBuilder)
+                        }
 
                         State.MightDomain -> {
                             domainCheck(contentBuilder)
@@ -200,12 +210,16 @@ class TwitterParser(
                     when (state) {
                         State.Content -> Unit
                         State.AccSpace -> Unit
-                        State.InUserName,
                         State.InUserNameAcct,
+                        -> {
+                            userAcctCheck(contentBuilder)
+                        }
+
+                        State.InUserName,
                         State.InHashTag,
                         State.InCashTag,
                         -> {
-                            accept(contentBuilder)
+                            lengthCheck(contentBuilder)
                         }
 
                         State.InUrl -> {
@@ -413,9 +427,27 @@ class TwitterParser(
         }
     }
 
-    private fun emojiCheck(contentBuilder: ArrayList<Pair<Type, StringBuilder>>) {
+    private fun lengthCheck(contentBuilder: ArrayList<Pair<Type, StringBuilder>>): State {
         val last = contentBuilder.last().second
-        if (last.startsWith(":") && last.endsWith(":")) {
+        return if (last.length > 1) {
+            accept(contentBuilder)
+        } else {
+            reject(contentBuilder)
+        }
+    }
+
+    private fun userAcctCheck(contentBuilder: ArrayList<Pair<Type, StringBuilder>>): State {
+        val last = contentBuilder.last().second
+        return if (last.startsWith("@") && last.length > 1 && last.last() !in UserNameToken.Tags) {
+            accept(contentBuilder)
+        } else {
+            reject(contentBuilder)
+        }
+    }
+
+    private fun emojiCheck(contentBuilder: ArrayList<Pair<Type, StringBuilder>>): State {
+        val last = contentBuilder.last().second
+        return if (last.startsWith(":") && last.endsWith(":")) {
             accept(contentBuilder)
         } else {
             reject(contentBuilder)
@@ -436,7 +468,7 @@ class TwitterParser(
         if (
             last.indexOf(':', startIndex = "https://".length) < 0 &&
             last.indexOf('/', startIndex = "https://".length) < 0
-            ) {
+        ) {
             return State.MightUrlPort
         }
         return urlCheck(contentBuilder)

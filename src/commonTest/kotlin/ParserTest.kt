@@ -548,4 +548,22 @@ class ParserTest {
         assertIs<StringToken>(result[0])
         assertEquals("test $", result[0].value)
     }
+
+    @Test
+    fun testFakeTags() {
+        val text = "test # $ @ haha"
+        val result = parser.parse(text)
+        assertEquals(1, result.size)
+        assertIs<StringToken>(result[0])
+        assertEquals("test # $ @ haha", result[0].value)
+    }
+
+    @Test
+    fun testFakeTags2() {
+        val text = "test #: $: @: haha"
+        val result = parser.parse(text)
+        assertEquals(1, result.size)
+        assertIs<StringToken>(result[0])
+        assertEquals("test #: $: @: haha", result[0].value)
+    }
 }
