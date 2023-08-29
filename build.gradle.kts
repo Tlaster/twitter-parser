@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "moe.tlaster"
-version = " 0.2.10"
+version = " 0.3.0"
 
 repositories {
     mavenCentral()
@@ -26,7 +26,7 @@ kotlin {
     }
     js(IR) {
         nodejs()
-        browser()
+//        browser()
     }
     if (HostManager.hostIsMac) {
         ios()
