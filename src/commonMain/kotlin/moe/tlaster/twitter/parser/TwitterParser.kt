@@ -6,6 +6,7 @@ class TwitterParser(
     private val enableDotInUserName: Boolean = false,
     private val enableDomainDetection: Boolean = false,
     private val enableNonAsciiInUrl: Boolean = true,
+    private val enableEscapeInUrl: Boolean = false,
 ) {
     private val urlEscapeChars = listOf(
         '!',
@@ -197,9 +198,12 @@ class TwitterParser(
                             val last = contentBuilder.last().second
                             if (
                                 last.indexOf(':', startIndex = "https://".length) < 0 &&
-                                last.indexOf('/', startIndex = "https://".length) < 0
+                                last.indexOf('/', startIndex = "https://".length) < 0 &&
+                                !enableEscapeInUrl
                             ) {
                                 State.MightUrlPort
+                            } else if (enableEscapeInUrl) {
+                                state
                             } else {
                                 urlCheck(contentBuilder)
                             }
@@ -330,7 +334,7 @@ class TwitterParser(
                         }
 
                         State.InUrl -> {
-                            if (char in urlEscapeChars) {
+                            if (char in urlEscapeChars && !enableEscapeInUrl) {
                                 state = urlCheck(contentBuilder)
                             } else if (!enableNonAsciiInUrl && char !in urlCharList) {
                                 state = accept(contentBuilder)
