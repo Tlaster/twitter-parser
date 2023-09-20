@@ -731,4 +731,18 @@ class ParserTest {
         assertIs<StringToken>(result[2])
         assertEquals(" end", result[2].value)
     }
+    
+    @Test
+    fun testUrlWithLastDot() {
+        val url = "https://t.co/NECo3WQMJQ"
+        val content = "test ${url}."
+        val result = parser.parse(content)
+        assertEquals(3, result.size)
+        assertIs<StringToken>(result[0])
+        assertEquals("test ", result[0].value)
+        assertIs<UrlToken>(result[1])
+        assertEquals(url, result[1].value)
+        assertIs<StringToken>(result[2])
+        assertEquals(".", result[2].value)
+    }
 }

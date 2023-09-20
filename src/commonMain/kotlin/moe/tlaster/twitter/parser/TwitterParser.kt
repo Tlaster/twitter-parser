@@ -514,6 +514,12 @@ class TwitterParser(
         if (!last.contains('.')) {
             return reject(contentBuilder)
         }
+        if (last.last() == '.') {
+            last.deleteAt(last.lastIndex)
+            val nextState = accept(contentBuilder)
+            contentBuilder.last().second.append(".")
+            return nextState
+        }
         // TODO: check if url is valid
         return accept(contentBuilder)
     }
