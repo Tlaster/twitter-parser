@@ -1,5 +1,4 @@
-import java.util.Properties
-import org.jetbrains.kotlin.konan.target.HostManager
+import com.vanniktech.maven.publish.SonatypeHost
 
 plugins {
     kotlin("multiplatform") version "1.8.0"
@@ -53,7 +52,7 @@ mavenPublishing {
     coordinates(
         groupId = "moe.tlaster",
         artifactId = "twitter-parser",
-        version = "0.3.4",
+        version = "0.3.4-SNAPSHOT",
     )
     pom {
         name.set("twitter-parser")
