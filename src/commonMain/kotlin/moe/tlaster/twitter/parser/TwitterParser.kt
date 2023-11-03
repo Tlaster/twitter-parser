@@ -7,6 +7,7 @@ class TwitterParser(
     private val enableDomainDetection: Boolean = false,
     private val enableNonAsciiInUrl: Boolean = true,
     private val enableEscapeInUrl: Boolean = false,
+    private val allowAllTextInUserName: Boolean = false,
 ) {
     private val urlEscapeChars = listOf(
         '!',
@@ -72,6 +73,10 @@ class TwitterParser(
                         state == State.AccSpace -> {
                             contentBuilder.add(Type.UserName to StringBuilder())
                             State.InUserName
+                        }
+
+                        allowAllTextInUserName && state == State.InUserName -> {
+                            state
                         }
 
                         enableAcct && state == State.InUserName -> {
@@ -173,12 +178,23 @@ class TwitterParser(
                     state = when (state) {
                         State.MightUrlP -> State.MightUrlDot
                         State.MightUrlS -> State.MightUrlDot
-                        State.InUserNameAcct,
-                        -> {
-                            userAcctCheck(contentBuilder)
+
+                        State.InUserNameAcct -> {
+                            if (!allowAllTextInUserName) {
+                                userAcctCheck(contentBuilder)
+                            } else {
+                                state
+                            }
                         }
 
-                        State.InUserName,
+                        State.InUserName -> {
+                            if (!allowAllTextInUserName) {
+                                lengthCheck(contentBuilder)
+                            } else {
+                                state
+                            }
+                        }
+
                         State.InCashTag,
                         State.InHashTag,
                         -> {
@@ -222,12 +238,22 @@ class TwitterParser(
                     state = when (state) {
                         State.MightUrlDot -> State.MightUrlSlash1
                         State.MightUrlSlash1 -> State.InUrl
-                        State.InUserNameAcct,
-                        -> {
-                            userAcctCheck(contentBuilder)
+
+                        State.InUserNameAcct -> {
+                            if (!allowAllTextInUserName) {
+                                userAcctCheck(contentBuilder)
+                            } else {
+                                state
+                            }
                         }
 
-                        State.InUserName,
+                        State.InUserName -> {
+                            if (!allowAllTextInUserName) {
+                                lengthCheck(contentBuilder)
+                            } else {
+                                state
+                            }
+                        }
                         State.InHashTag,
                         State.InCashTag,
                         -> {
@@ -295,7 +321,7 @@ class TwitterParser(
                 else -> {
                     when (state) {
                         State.InUserName -> {
-                            if (!userNameCharList.contains(char) && (!enableDotInUserName || char != '.')) {
+                            if (!userNameCharList.contains(char) && (!enableDotInUserName || char != '.') && !allowAllTextInUserName) {
                                 state = if (contentBuilder.last().second.last() in UserNameToken.Tags) {
                                     reject(contentBuilder)
                                 } else {
@@ -305,7 +331,7 @@ class TwitterParser(
                         }
 
                         State.InUserNameAcct -> {
-                            if (!userNameCharList.contains(char) && (char != '.' && enableAcct)) {
+                            if (!userNameCharList.contains(char) && (char != '.' && enableAcct) && !allowAllTextInUserName) {
                                 state = if (contentBuilder.last().second.last() in UserNameToken.Tags) {
                                     reject(contentBuilder)
                                 } else {
