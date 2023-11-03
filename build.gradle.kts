@@ -52,7 +52,7 @@ mavenPublishing {
     coordinates(
         groupId = "moe.tlaster",
         artifactId = "twitter-parser",
-        version = "0.3.4-SNAPSHOT",
+        version = "0.3.4",
     )
     pom {
         name.set("twitter-parser")
