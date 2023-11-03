@@ -4,12 +4,8 @@ import org.jetbrains.kotlin.konan.target.HostManager
 plugins {
     kotlin("multiplatform") version "1.8.0"
     id("org.jetbrains.kotlinx.kover") version "0.7.0-Alpha"
-    id("maven-publish")
-    id("signing")
+    id("com.vanniktech.maven.publish") version "0.25.3"
 }
-
-group = "moe.tlaster"
-version = "0.3.3"
 
 repositories {
     mavenCentral()
@@ -28,23 +24,17 @@ kotlin {
         nodejs()
 //        browser()
     }
-    if (HostManager.hostIsMac) {
-        ios()
-        iosSimulatorArm64()
-        macosX64()
-        macosArm64()
-    }
-    if (HostManager.hostIsMingw) {
-        mingwX64()
-        mingwX86()
-    }
-    if (HostManager.hostIsLinux) {
-        linuxX64()
-        linuxArm64()
-        linuxArm32Hfp()
-        linuxMips32()
-        linuxMipsel32()
-    }
+    ios()
+    iosSimulatorArm64()
+    macosX64()
+    macosArm64()
+    mingwX64()
+    mingwX86()
+    linuxX64()
+    linuxArm64()
+    linuxArm32Hfp()
+    linuxMips32()
+    linuxMipsel32()
 
     sourceSets {
         val commonMain by getting
@@ -56,74 +46,37 @@ kotlin {
     }
 }
 
-ext {
-    val publishPropFile = rootProject.file("publish.properties")
-    if (publishPropFile.exists()) {
-        Properties().apply {
-            load(publishPropFile.inputStream())
-        }.forEach { name, value ->
-            set(name.toString(), value)
-        }
-    } else {
-        set("signing.keyId", System.getenv("SIGNING_KEY_ID"))
-        set("signing.password", System.getenv("SIGNING_PASSWORD"))
-        set("signing.secretKeyRingFile", System.getenv("SIGNING_SECRET_KEY_RING_FILE"))
-        set("ossrhUsername", System.getenv("OSSRH_USERNAME"))
-        set("ossrhPassword", System.getenv("OSSRH_PASSWORD"))
-    }
-}
 
-val javadocJar: TaskProvider<Jar> by tasks.registering(Jar::class) {
-    archiveClassifier.set("javadoc")
-}
+mavenPublishing {
+    publishToMavenCentral(SonatypeHost.S01)
+    signAllPublications()
+    coordinates(
+        groupId = "moe.tlaster",
+        artifactId = "twitter-parser",
+        version = "0.3.4",
+    )
+    pom {
+        name.set("twitter-parser")
+        description.set("Twitter parser")
+        url.set("https://github.com/Tlaster/twitter-parser")
 
-publishing {
-    if (rootProject.file("publish.properties").exists()) {
-        signing {
-            sign(publishing.publications)
-        }
-        repositories {
-            maven {
-                val releasesRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
-                val snapshotsRepoUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
-                url = if (version.toString().endsWith("SNAPSHOT")) {
-                    uri(snapshotsRepoUrl)
-                } else {
-                    uri(releasesRepoUrl)
-                }
-                credentials {
-                    username = project.ext.get("ossrhUsername").toString()
-                    password = project.ext.get("ossrhPassword").toString()
-                }
+        licenses {
+            license {
+                name.set("MIT")
+                url.set("https://opensource.org/licenses/MIT")
             }
         }
-    }
-
-    publications.withType<MavenPublication> {
-        artifact(javadocJar)
-        pom {
-            name.set("twitter-parser")
-            description.set("Twitter parser")
+        developers {
+            developer {
+                id.set("Tlaster")
+                name.set("James Tlaster")
+                email.set("tlaster@outlook.com")
+            }
+        }
+        scm {
             url.set("https://github.com/Tlaster/twitter-parser")
-
-            licenses {
-                license {
-                    name.set("MIT")
-                    url.set("https://opensource.org/licenses/MIT")
-                }
-            }
-            developers {
-                developer {
-                    id.set("Tlaster")
-                    name.set("James Tlaster")
-                    email.set("tlaster@outlook.com")
-                }
-            }
-            scm {
-                url.set("https://github.com/Tlaster/twitter-parser")
-                connection.set("scm:git:git://github.com/Tlaster/twitter-parser.git")
-                developerConnection.set("scm:git:git://github.com/Tlaster/twitter-parser.git")
-            }
+            connection.set("scm:git:git://github.com/Tlaster/twitter-parser.git")
+            developerConnection.set("scm:git:git://github.com/Tlaster/twitter-parser.git")
         }
     }
 }
