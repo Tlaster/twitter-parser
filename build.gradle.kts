@@ -6,6 +6,13 @@ plugins {
     id("com.vanniktech.maven.publish") version "0.25.3"
 }
 
+val libName = "twitter-parser"
+val libGroup = "moe.tlaster"
+val libVersion = "0.3.5-SNAPSHOT"
+
+group = libGroup
+version = libVersion
+
 repositories {
     mavenCentral()
 }
@@ -13,7 +20,7 @@ repositories {
 kotlin {
     jvm {
         compilations.all {
-            kotlinOptions.jvmTarget = "11"
+            kotlinOptions.jvmTarget = "1.8"
         }
         testRuns["test"].executionTask.configure {
             useJUnitPlatform()
@@ -50,12 +57,12 @@ mavenPublishing {
     publishToMavenCentral(SonatypeHost.S01)
     signAllPublications()
     coordinates(
-        groupId = "moe.tlaster",
-        artifactId = "twitter-parser",
-        version = "0.3.4",
+        groupId = libGroup,
+        artifactId = libName,
+        version = libVersion,
     )
     pom {
-        name.set("twitter-parser")
+        name.set(libName)
         description.set("Twitter parser")
         url.set("https://github.com/Tlaster/twitter-parser")
 
