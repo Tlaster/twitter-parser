@@ -1,14 +1,14 @@
 import com.vanniktech.maven.publish.SonatypeHost
 
 plugins {
-    kotlin("multiplatform") version "1.8.0"
+    kotlin("multiplatform") version "1.9.23"
     id("org.jetbrains.kotlinx.kover") version "0.7.0-Alpha"
     id("com.vanniktech.maven.publish") version "0.25.3"
 }
 
 val libName = "twitter-parser"
 val libGroup = "moe.tlaster"
-val libVersion = "0.3.6-SNAPSHOT"
+val libVersion = "0.4.0-SNAPSHOT"
 
 group = libGroup
 version = libVersion
@@ -18,6 +18,7 @@ repositories {
 }
 
 kotlin {
+    applyDefaultHierarchyTemplate()
     jvm {
         compilations.all {
             kotlinOptions.jvmTarget = "1.8"
@@ -30,17 +31,15 @@ kotlin {
         nodejs()
 //        browser()
     }
-    ios()
+    iosArm64()
+    iosX64()
     iosSimulatorArm64()
     macosX64()
     macosArm64()
     mingwX64()
-    mingwX86()
     linuxX64()
     linuxArm64()
     linuxArm32Hfp()
-    linuxMips32()
-    linuxMipsel32()
 
     sourceSets {
         val commonMain by getting

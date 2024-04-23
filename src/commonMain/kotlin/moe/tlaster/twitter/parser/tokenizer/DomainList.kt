@@ -1,4 +1,4 @@
-package moe.tlaster.twitter.parser
+package moe.tlaster.twitter.parser.tokenizer
 
 internal val DomainList = listOf(
     "AAA",
@@ -1481,5 +1481,5 @@ internal val DomainList = listOf(
     "ZM",
     "ZONE",
     "ZUERICH",
-    "ZW"
+    "ZW",
 )
