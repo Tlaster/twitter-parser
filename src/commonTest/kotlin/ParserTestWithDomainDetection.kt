@@ -609,4 +609,24 @@ class ParserTestWithDomainDetection {
         assertIs<StringToken>(result[0])
         assertEquals("$domain hello", result[0].value)
     }
+
+
+    @Test
+    fun testUrlWithLastComma() {
+        val url = "This is a post made with https://firefly.mask.social/, which posts to farcaster and lens at the same time."
+        val content = url
+        val result = TwitterParser(
+            enableEscapeInUrl = true,
+            enableDotInUserName = true,
+            enableDomainDetection = true,
+            allowAllTextInUserName = true,
+        ).parse(content)
+        assertEquals(3, result.size)
+        assertIs<StringToken>(result[0])
+        assertEquals("This is a post made with ", result[0].value)
+        assertIs<UrlToken>(result[1])
+        assertEquals("https://firefly.mask.social/", result[1].value)
+        assertIs<StringToken>(result[2])
+        assertEquals(", which posts to farcaster and lens at the same time.", result[2].value)
+    }
 }

@@ -169,7 +169,15 @@ internal data object UrlState : State {
             else -> {
                 if (current in urlEscapeChars) {
                     if (tokenizer.enableEscapeInUrl) {
-                        tokenizer.emit(TokenCharacterType.Url, reader.position)
+                        val next = reader.next()
+                        if (next in emptyChar + eof) {
+//                            tokenizer.accept()
+//                            tokenizer.switch(DataState)
+//                            reader.pushback()
+                            urlCheck(tokenizer, reader)
+                        } else {
+                            tokenizer.emit(TokenCharacterType.Url, reader.position)
+                        }
                     } else {
 //                        tokenizer.accept()
 //                        tokenizer.switch(DataState)
