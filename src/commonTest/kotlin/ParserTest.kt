@@ -731,7 +731,7 @@ class ParserTest {
         assertIs<StringToken>(result[2])
         assertEquals(" end", result[2].value)
     }
-    
+
     @Test
     fun testUrlWithLastDot() {
         val url = "https://t.co/NECo3WQMJQ"
@@ -744,5 +744,15 @@ class ParserTest {
         assertEquals(url, result[1].value)
         assertIs<StringToken>(result[2])
         assertEquals(".", result[2].value)
+    }
+
+    @Test
+    fun testNotCash() {
+        val url = "$123"
+        val content = "test ${url}."
+        val result = parser.parse(content)
+        assertEquals(1, result.size)
+        assertIs<StringToken>(result[0])
+        assertEquals(content, result[0].value)
     }
 }

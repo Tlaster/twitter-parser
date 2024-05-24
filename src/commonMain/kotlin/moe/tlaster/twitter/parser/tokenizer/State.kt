@@ -266,6 +266,27 @@ internal data object DollarState : State {
 }
 
 internal data object CashTagState : State {
+    private fun cashCheck(tokenizer: Tokenizer, reader: Reader) {
+        var index = reader.position - 2
+        while (index > 0) {
+            if (tokenizer.readAt(index) != TokenCharacterType.Cash) {
+                break
+            }
+            index--
+        }
+        val cash = reader.readAt(index + 1, reader.position - index - 2).trimStart('$').trimStart('＄')
+        if (cash.all { it in asciiDigit }) {
+            tokenizer.emitRange(TokenCharacterType.Character, index, reader.position)
+            tokenizer.switch(DataState)
+            reader.pushback()
+        } else {
+            tokenizer.accept()
+            tokenizer.switch(DataState)
+            reader.pushback()
+        }
+    }
+
+
     override fun read(tokenizer: Tokenizer, reader: Reader) {
         when (val current = reader.consume()) {
             in asciiAlphanumeric -> {
@@ -273,9 +294,10 @@ internal data object CashTagState : State {
             }
 
             else -> {
-                tokenizer.accept()
-                tokenizer.switch(DataState)
-                reader.pushback()
+                cashCheck(tokenizer, reader)
+//                tokenizer.accept()
+//                tokenizer.switch(DataState)
+//                reader.pushback()
             }
         }
     }

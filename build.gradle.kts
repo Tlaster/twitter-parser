@@ -8,7 +8,7 @@ plugins {
 
 val libName = "twitter-parser"
 val libGroup = "moe.tlaster"
-val libVersion = "0.4.1"
+val libVersion = "0.4.2"
 
 group = libGroup
 version = libVersion
