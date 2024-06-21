@@ -29,7 +29,7 @@ kotlin {
     }
     js(IR) {
         nodejs()
-        browser()
+//        browser()
     }
     iosArm64()
     iosX64()
@@ -54,7 +54,7 @@ kotlin {
 
 
 mavenPublishing {
-    publishToMavenCentral(SonatypeHost.S01)
+    publishToMavenCentral(SonatypeHost.S01, automaticRelease = true)
     signAllPublications()
     coordinates(
         groupId = libGroup,
