@@ -5,7 +5,10 @@ import kotlin.test.assertEquals
 import kotlin.test.assertIs
 
 class ParserTestWithEmojiAndAcct {
-    private val parser = TwitterParser(enableAcct = true, enableEmoji = true)
+    private val parser = TwitterParser(
+        enableEmoji = true,
+        validMarkInUserName = listOf('@', '.'),
+    )
 
     @Test
     fun testSimpleTweet() {
@@ -462,9 +465,11 @@ class ParserTestWithEmojiAndAcct {
         val userName = "@user@"
         val content = "$userName: hello"
         val result = parser.parse(content)
-        assertEquals(1, result.size)
-        assertIs<StringToken>(result[0])
-        assertEquals(content, result[0].value)
+        assertEquals(2, result.size)
+        assertIs<UserNameToken>(result[0])
+        assertEquals("@user", result[0].value)
+        assertIs<StringToken>(result[1])
+        assertEquals("@: hello", result[1].value)
     }
 
     @Test
@@ -472,9 +477,11 @@ class ParserTestWithEmojiAndAcct {
         val userName = "@user@"
         val content = "$userName hello"
         val result = parser.parse(content)
-        assertEquals(1, result.size)
-        assertIs<StringToken>(result[0])
-        assertEquals(content, result[0].value)
+        assertEquals(2, result.size)
+        assertIs<UserNameToken>(result[0])
+        assertEquals("@user", result[0].value)
+        assertIs<StringToken>(result[1])
+        assertEquals("@ hello", result[1].value)
     }
 
     @Test
@@ -482,9 +489,11 @@ class ParserTestWithEmojiAndAcct {
         val userName = "@user@@domain"
         val content = "$userName: hello"
         val result = parser.parse(content)
-        assertEquals(1, result.size)
-        assertIs<StringToken>(result[0])
-        assertEquals(content, result[0].value)
+        assertEquals(2, result.size)
+        assertIs<UserNameToken>(result[0])
+        assertEquals("@user", result[0].value)
+        assertIs<StringToken>(result[1])
+        assertEquals("@@domain: hello", result[1].value)
     }
 
     @Test
@@ -516,9 +525,11 @@ class ParserTestWithEmojiAndAcct {
         val userName = "@user@/"
         val content = "${userName}domain: hello"
         val result = parser.parse(content)
-        assertEquals(1, result.size)
-        assertIs<StringToken>(result[0])
-        assertEquals(content, result[0].value)
+        assertEquals(2, result.size)
+        assertIs<UserNameToken>(result[0])
+        assertEquals("@user", result[0].value)
+        assertIs<StringToken>(result[1])
+        assertEquals("@/domain: hello", result[1].value)
     }
 
     @Test
@@ -526,9 +537,11 @@ class ParserTestWithEmojiAndAcct {
         val userName = "@user@"
         val content = "$userName"
         val result = parser.parse(content)
-        assertEquals(1, result.size)
-        assertIs<StringToken>(result[0])
-        assertEquals(content, result[0].value)
+        assertEquals(2, result.size)
+        assertIs<UserNameToken>(result[0])
+        assertEquals("@user", result[0].value)
+        assertIs<StringToken>(result[1])
+        assertEquals("@", result[1].value)
     }
 
     @Test
@@ -548,9 +561,11 @@ class ParserTestWithEmojiAndAcct {
         val userName = "@user@"
         val content = "${userName}!: hello"
         val result = parser.parse(content)
-        assertEquals(1, result.size)
-        assertIs<StringToken>(result[0])
-        assertEquals(content, result[0].value)
+        assertEquals(2, result.size)
+        assertIs<UserNameToken>(result[0])
+        assertEquals("@user", result[0].value)
+        assertIs<StringToken>(result[1])
+        assertEquals("@!: hello", result[1].value)
     }
 
 }

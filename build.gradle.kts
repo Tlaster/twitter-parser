@@ -8,7 +8,7 @@ plugins {
 
 val libName = "twitter-parser"
 val libGroup = "moe.tlaster"
-val libVersion = "0.4.2"
+val libVersion = "0.5.0"
 
 group = libGroup
 version = libVersion
@@ -29,7 +29,7 @@ kotlin {
     }
     js(IR) {
         nodejs()
-//        browser()
+        browser()
     }
     iosArm64()
     iosX64()
@@ -39,7 +39,8 @@ kotlin {
     mingwX64()
     linuxX64()
     linuxArm64()
-    linuxArm32Hfp()
+    wasmJs()
+    wasmWasi()
 
     sourceSets {
         val commonMain by getting

@@ -5,7 +5,10 @@ import kotlin.test.assertEquals
 import kotlin.test.assertIs
 
 class ParserWithAcctTest {
-    private val parser = TwitterParser(enableAcct = true)
+    private val parser = TwitterParser(
+        validMarkInUserName = listOf('@', '.'),
+    )
+
     @Test
     fun testSimpleTweet() {
         val text = "twitter"

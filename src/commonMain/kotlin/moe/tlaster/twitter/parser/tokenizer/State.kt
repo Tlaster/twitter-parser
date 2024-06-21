@@ -306,29 +306,18 @@ internal data object CashTagState : State {
 internal data object AtState : State {
     override fun read(tokenizer: Tokenizer, reader: Reader) {
         if (prevIsSpace(reader)) {
+            val userNameTokens = asciiAlphanumericUnderscore + tokenizer.validMarkInUserName
             when (val current = reader.consume()) {
-                in asciiAlphanumericUnderscoreDash -> {
+                in userNameTokens -> {
                     tokenizer.emit(TokenCharacterType.UserName, reader.position - 1)
                     tokenizer.switch(UserNameState)
                     reader.pushback()
                 }
 
                 else -> {
-                    if (tokenizer.allowAllTextInUserName) {
-                        if (current in emptyChar + eof) {
-                            tokenizer.accept()
-                            tokenizer.switch(DataState)
-                            reader.pushback()
-                        } else {
-                            tokenizer.emit(TokenCharacterType.UserName, reader.position - 1)
-                            tokenizer.switch(UserNameState)
-                            reader.pushback()
-                        }
-                    } else {
-                        tokenizer.emit(TokenCharacterType.Character, reader.position - 1)
-                        tokenizer.switch(DataState)
-                        reader.pushback()
-                    }
+                    tokenizer.emit(TokenCharacterType.Character, reader.position - 1)
+                    tokenizer.switch(DataState)
+                    reader.pushback()
                 }
             }
         } else {
@@ -340,36 +329,14 @@ internal data object AtState : State {
 
 internal data object UserNameState : State {
     override fun read(tokenizer: Tokenizer, reader: Reader) {
-        val userNameTokens = if (tokenizer.enableDotInUserName) {
-            asciiAlphanumericUnderscore + '.'
-        } else {
-            asciiAlphanumericUnderscore
-        }
+        val userNameTokens = asciiAlphanumericUnderscore
         when (val current = reader.consume()) {
             in userNameTokens -> {
                 tokenizer.emit(TokenCharacterType.UserName, reader.position)
             }
-
-            '@' -> {
-                if (tokenizer.enableAcct) {
-                    val next = reader.next()
-                    if (next.isLetterOrDigit()) {
-                        tokenizer.emit(TokenCharacterType.UserName, reader.position)
-                        tokenizer.switch(UserAcctState)
-                    } else {
-                        var start = reader.position - 1
-                        while (start > 0) {
-                            if (tokenizer.readAt(start - 1) != TokenCharacterType.UserName) {
-                                break
-                            }
-                            start--
-                        }
-                        tokenizer.emitRange(TokenCharacterType.Character, start, reader.position)
-                        tokenizer.accept()
-                        tokenizer.switch(DataState)
-                        reader.pushback()
-                    }
-                } else if (tokenizer.allowAllTextInUserName) {
+            in tokenizer.validMarkInUserName -> {
+                val next = reader.next()
+                if (next.isLetterOrDigit()) {
                     tokenizer.emit(TokenCharacterType.UserName, reader.position)
                 } else {
                     tokenizer.accept()
@@ -377,33 +344,6 @@ internal data object UserNameState : State {
                     reader.pushback()
                 }
             }
-
-            else -> {
-                if (tokenizer.allowAllTextInUserName) {
-                    if (current in emptyChar + eof + '#' + '$') {
-                        tokenizer.accept()
-                        tokenizer.switch(DataState)
-                        reader.pushback()
-                    } else {
-                        tokenizer.emit(TokenCharacterType.UserName, reader.position)
-                    }
-                } else {
-                    tokenizer.accept()
-                    tokenizer.switch(DataState)
-                    reader.pushback()
-                }
-            }
-        }
-    }
-}
-
-internal data object UserAcctState : State {
-    override fun read(tokenizer: Tokenizer, reader: Reader) {
-        when (val current = reader.consume()) {
-            in asciiAlphanumericUnderscore + '.' -> {
-                tokenizer.emit(TokenCharacterType.UserName, reader.position)
-            }
-
             else -> {
                 tokenizer.accept()
                 tokenizer.switch(DataState)

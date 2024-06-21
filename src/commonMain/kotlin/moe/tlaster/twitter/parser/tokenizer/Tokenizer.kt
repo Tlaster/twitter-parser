@@ -2,13 +2,11 @@ package moe.tlaster.twitter.parser.tokenizer
 
 
 internal class Tokenizer(
-    val enableAcct: Boolean = false,
     val enableEmoji: Boolean = false,
-    val enableDotInUserName: Boolean = false,
     val enableDomainDetection: Boolean = false,
     val enableNonAsciiInUrl: Boolean = true,
     val enableEscapeInUrl: Boolean = false,
-    val allowAllTextInUserName: Boolean = false,
+    val validMarkInUserName: List<Char> = listOf(),
 ) {
     private var currentState: State = DataState
     private lateinit var tokens: ArrayList<TokenCharacterType>

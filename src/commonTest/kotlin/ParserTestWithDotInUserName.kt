@@ -5,7 +5,9 @@ import kotlin.test.assertEquals
 import kotlin.test.assertIs
 
 class ParserTestWithDotInUserName {
-    private val parser = TwitterParser(enableDotInUserName = true)
+    private val parser = TwitterParser(
+        validMarkInUserName = listOf('.'),
+    )
 
     @Test
     fun testSimpleTweet() {

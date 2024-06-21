@@ -5,7 +5,10 @@ import kotlin.test.assertEquals
 import kotlin.test.assertIs
 
 class ParserTestWithDomainDetectionAndDotInUserName {
-    private val parser = TwitterParser(enableDomainDetection = true, enableDotInUserName = true)
+    private val parser = TwitterParser(
+        enableDomainDetection = true,
+        validMarkInUserName = listOf('.'),
+    )
 
     @Test
     fun testSimpleTweet() {

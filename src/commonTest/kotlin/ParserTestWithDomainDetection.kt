@@ -617,9 +617,8 @@ class ParserTestWithDomainDetection {
         val content = url
         val result = TwitterParser(
             enableEscapeInUrl = true,
-            enableDotInUserName = true,
             enableDomainDetection = true,
-            allowAllTextInUserName = true,
+            validMarkInUserName = listOf('.'),
         ).parse(content)
         assertEquals(3, result.size)
         assertIs<StringToken>(result[0])
