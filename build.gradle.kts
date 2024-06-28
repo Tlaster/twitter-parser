@@ -8,7 +8,7 @@ plugins {
 
 val libName = "twitter-parser"
 val libGroup = "moe.tlaster"
-val libVersion = "0.5.0"
+val libVersion = "0.5.1-SNAPSHOT"
 
 group = libGroup
 version = libVersion
@@ -54,7 +54,7 @@ kotlin {
 
 
 mavenPublishing {
-    publishToMavenCentral(SonatypeHost.S01, automaticRelease = true)
+    publishToMavenCentral(SonatypeHost.S01)
     signAllPublications()
     coordinates(
         groupId = libGroup,
