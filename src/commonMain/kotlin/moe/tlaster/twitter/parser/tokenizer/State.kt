@@ -19,8 +19,12 @@ private val asciiAlphanumericAndEmpty = asciiAlphanumeric + ' ' + TAB + LF
 private val urlChar = asciiAlphanumeric + "-._~:/?#[]@!\$&'()*+,;=".toList()
 
 private fun prevIsSpace(reader: Reader): Boolean {
+    return prevIsIn(reader, emptyChar)
+}
+
+private fun prevIsIn(reader: Reader, chars: List<Char>): Boolean {
     // position == 1 means it is at the beginning of the string, since we consume the first character
-    return reader.position == 1 || reader.readAt(reader.position - 2) in emptyChar
+    return reader.position == 1 || reader.readAt(reader.position - 2) in chars
 }
 
 internal sealed interface State {
@@ -305,7 +309,7 @@ internal data object CashTagState : State {
 
 internal data object AtState : State {
     override fun read(tokenizer: Tokenizer, reader: Reader) {
-        if (prevIsSpace(reader)) {
+        if (prevIsSpace(reader) || !prevIsIn(reader, asciiAlphanumericUnderscore + listOf('@'))) {
             val userNameTokens = asciiAlphanumericUnderscore + tokenizer.validMarkInUserName
             when (val current = reader.consume()) {
                 in userNameTokens -> {
