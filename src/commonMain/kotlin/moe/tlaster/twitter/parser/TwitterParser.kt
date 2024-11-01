@@ -10,6 +10,7 @@ class TwitterParser(
     private val enableNonAsciiInUrl: Boolean = true,
     private val enableEscapeInUrl: Boolean = false,
     private val validMarkInUserName: List<Char> = listOf(),
+    private val validMarkInHashTag: List<Char> = listOf(),
 ) {
 
     fun parse(input: String): List<Token> {
@@ -19,6 +20,7 @@ class TwitterParser(
             enableNonAsciiInUrl = enableNonAsciiInUrl,
             enableEscapeInUrl = enableEscapeInUrl,
             validMarkInUserName = validMarkInUserName,
+            validMarkInHashTag = validMarkInHashTag,
         )
         val tokenCharacterTypes = tokenizer.parse(StringReader(input))
         return TreeBuilder().build(StringReader(input), tokenCharacterTypes)

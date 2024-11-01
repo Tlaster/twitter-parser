@@ -419,7 +419,7 @@ internal data object HashState : State {
     override fun read(tokenizer: Tokenizer, reader: Reader) {
         if (prevIsSpace(reader)) {
             val current = reader.consume()
-            if (current.isLetterOrDigit() || current == '_') {
+            if (current.isLetterOrDigit() || current == '_' || current in tokenizer.validMarkInHashTag) {
                 tokenizer.emit(TokenCharacterType.HashTag, reader.position - 1)
                 tokenizer.switch(HashTagState)
                 reader.pushback()
@@ -438,7 +438,7 @@ internal data object HashState : State {
 internal data object HashTagState : State {
     override fun read(tokenizer: Tokenizer, reader: Reader) {
         val current = reader.consume()
-        if (current.isLetterOrDigit() || current == '_') {
+        if (current.isLetterOrDigit() || current == '_' || current in tokenizer.validMarkInHashTag) {
             tokenizer.emit(TokenCharacterType.HashTag, reader.position)
         } else {
             tokenizer.accept()

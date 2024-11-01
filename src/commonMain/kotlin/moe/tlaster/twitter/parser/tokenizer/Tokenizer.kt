@@ -7,6 +7,7 @@ internal class Tokenizer(
     val enableNonAsciiInUrl: Boolean = true,
     val enableEscapeInUrl: Boolean = false,
     val validMarkInUserName: List<Char> = listOf(),
+    val validMarkInHashTag: List<Char> = listOf(),
 ) {
     private var currentState: State = DataState
     private lateinit var tokens: ArrayList<TokenCharacterType>
