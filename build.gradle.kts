@@ -8,7 +8,7 @@ plugins {
 
 val libName = "twitter-parser"
 val libGroup = "moe.tlaster"
-val libVersion = "0.5.1"
+val libVersion = "0.5.2"
 
 group = libGroup
 version = libVersion
@@ -26,10 +26,6 @@ kotlin {
         testRuns["test"].executionTask.configure {
             useJUnitPlatform()
         }
-    }
-    js(IR) {
-        nodejs()
-//        browser()
     }
     iosArm64()
     iosX64()
