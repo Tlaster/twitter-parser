@@ -3,12 +3,12 @@ import com.vanniktech.maven.publish.SonatypeHost
 plugins {
     kotlin("multiplatform") version "1.9.23"
     id("org.jetbrains.kotlinx.kover") version "0.7.0-Alpha"
-    id("com.vanniktech.maven.publish") version "0.25.3"
+    id("com.vanniktech.maven.publish") version "0.30.0"
 }
 
 val libName = "twitter-parser"
 val libGroup = "moe.tlaster"
-val libVersion = "0.5.3"
+val libVersion = "0.5.4"
 
 group = libGroup
 version = libVersion
