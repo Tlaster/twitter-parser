@@ -16,7 +16,8 @@ private const val TAB = '\u0009'
 private const val LF = '\u000A'
 private val emptyChar = listOf(TAB, LF, '\u000C', '\u0020', '　')
 private val asciiAlphanumericAndEmpty = asciiAlphanumeric + ' ' + TAB + LF
-private val urlChar = asciiAlphanumeric + "-._~:/?#[]@!\$&'()*+,;=".toList()
+private val marks = "-._~:/?#[]@!\$&'()*+,;=".toList()
+private val urlChar = asciiAlphanumeric + marks
 
 private fun prevIsSpace(reader: Reader): Boolean {
     return prevIsIn(reader, emptyChar)
@@ -309,7 +310,8 @@ internal data object CashTagState : State {
 
 internal data object AtState : State {
     override fun read(tokenizer: Tokenizer, reader: Reader) {
-        if (prevIsSpace(reader) || !prevIsIn(reader, asciiAlphanumericUnderscore + listOf('@'))) {
+        val availblePrevChar = asciiAlphanumeric + marks
+        if (prevIsSpace(reader) || !prevIsIn(reader, availblePrevChar)) {
             val userNameTokens = asciiAlphanumericUnderscore + tokenizer.validMarkInUserName
             when (val current = reader.consume()) {
                 in userNameTokens -> {

@@ -778,4 +778,15 @@ class ParserTest {
         assertIs<HashTagToken>(result[1])
         assertEquals("#test:test", result[1].value)
     }
+
+    @Test
+    fun testNonAlphBeforeUserName() {
+        val content = "测试@test"
+        val result = parser.parse(content)
+        assertEquals(2, result.size)
+        assertIs<StringToken>(result[0])
+        assertEquals("测试", result[0].value)
+        assertIs<UserNameToken>(result[1])
+        assertEquals("@test", result[1].value)
+    }
 }
