@@ -789,4 +789,13 @@ class ParserTest {
         assertIs<UserNameToken>(result[1])
         assertEquals("@test", result[1].value)
     }
+
+    @Test
+    fun testToeknWithNumber() {
+        val content = "test$100"
+        val result = parser.parse(content)
+        assertEquals(1, result.size)
+        assertIs<StringToken>(result[0])
+        assertEquals(content, result[0].value)
+    }
 }
