@@ -1,7 +1,7 @@
 import com.vanniktech.maven.publish.SonatypeHost
 
 plugins {
-    kotlin("multiplatform") version "1.9.23"
+    kotlin("multiplatform") version "1.9.0"
     id("org.jetbrains.kotlinx.kover") version "0.7.0-Alpha"
     id("com.vanniktech.maven.publish") version "0.30.0"
 }
