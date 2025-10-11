@@ -821,4 +821,22 @@ class ParserTest {
             result.map { it.value }
         )
     }
+
+    @Test
+    fun testUserName2() {
+        val content = "み(@akemitan_ )大先生のshizu本&メイキングset着弾！！"
+        val parser = TwitterParser(
+            enableNonAsciiInUrl = false,
+        )
+        val result = parser.parse(content)
+        assertEquals(3, result.size)
+        assertContentEquals(
+            listOf(
+                "み(",
+                "@akemitan_",
+                " )大先生のshizu本&メイキングset着弾！！",
+            ),
+            result.map { it.value }
+        )
+    }
 }

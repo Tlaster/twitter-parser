@@ -313,7 +313,7 @@ internal data object CashTagState : State {
 
 internal data object AtState : State {
     override fun read(tokenizer: Tokenizer, reader: Reader) {
-        val availblePrevChar = asciiAlphanumeric + marks
+        val availblePrevChar = asciiAlphanumeric + tokenizer.validMarkInUserName
         if (prevIsSpace(reader) || !prevIsIn(reader, availblePrevChar)) {
             val userNameTokens = asciiAlphanumericUnderscore + tokenizer.validMarkInUserName
             when (val current = reader.consume()) {
