@@ -17,6 +17,7 @@ private const val LF = '\u000A'
 private val emptyChar = listOf(TAB, LF, '\u000C', '\u0020', '　')
 private val asciiAlphanumericAndEmpty = asciiAlphanumeric + ' ' + TAB + LF
 private val marks = "-._~:/?#[]@!\$&'()*+,;=".toList()
+private val urlDisallowedEndMarks = ".".toList()
 private val urlChar = asciiAlphanumeric + marks
 
 private fun prevIsSpace(reader: Reader): Boolean {
@@ -129,9 +130,10 @@ internal data object UrlState : State {
     )
 
     private fun urlCheck(tokenizer: Tokenizer, reader: Reader) {
-        var index = reader.position - 2
+        var index = reader.position - 1
         while (index > 0) {
-            if (tokenizer.readAt(index) != TokenCharacterType.Url) {
+            val token = tokenizer.readAt(index)
+            if (token != TokenCharacterType.Url && token != TokenCharacterType.UnKnown) {
                 break
             }
             index--
@@ -163,9 +165,6 @@ internal data object UrlState : State {
                         tokenizer.emit(TokenCharacterType.Url, reader.position)
                         tokenizer.switch(UrlPortState)
                     } else {
-//                    tokenizer.accept()
-//                    tokenizer.switch(DataState)
-//                    reader.pushback()
                         urlCheck(tokenizer, reader)
                     }
                 }
@@ -176,29 +175,36 @@ internal data object UrlState : State {
                     if (tokenizer.enableEscapeInUrl) {
                         val next = reader.next()
                         if (next in emptyChar + eof) {
-//                            tokenizer.accept()
-//                            tokenizer.switch(DataState)
-//                            reader.pushback()
                             urlCheck(tokenizer, reader)
                         } else {
                             tokenizer.emit(TokenCharacterType.Url, reader.position)
                         }
                     } else {
-//                        tokenizer.accept()
-//                        tokenizer.switch(DataState)
-//                        reader.pushback()
                         urlCheck(tokenizer, reader)
                     }
                 } else {
-                    if (!current.isLetterOrDigit() && current != '/') {
+                    if (!current.isLetterOrDigit()) {
                         val next = reader.next()
-                        if (next in emptyChar + eof) {
-//                            tokenizer.accept()
-//                            tokenizer.switch(DataState)
-//                            reader.pushback()
-                            urlCheck(tokenizer, reader)
+                        if (current in marks) {
+                            if (next in emptyChar + eof) {
+                                if (current in urlDisallowedEndMarks) {
+                                    urlCheck(tokenizer, reader)
+                                } else {
+                                    tokenizer.emit(TokenCharacterType.Url, reader.position)
+                                }
+                            } else {
+                                tokenizer.emit(TokenCharacterType.Url, reader.position)
+                            }
                         } else {
-                            tokenizer.emit(TokenCharacterType.Url, reader.position)
+                            if (next in emptyChar + eof) {
+                                urlCheck(tokenizer, reader)
+                            } else {
+                                if (tokenizer.enableNonAsciiInUrl) {
+                                    tokenizer.emit(TokenCharacterType.Url, reader.position)
+                                } else {
+                                    urlCheck(tokenizer, reader)
+                                }
+                            }
                         }
                     } else {
                         if (tokenizer.enableNonAsciiInUrl) {
@@ -207,9 +213,6 @@ internal data object UrlState : State {
                             if (current in urlChar) {
                                 tokenizer.emit(TokenCharacterType.Url, reader.position)
                             } else {
-//                                tokenizer.accept()
-//                                tokenizer.switch(DataState)
-//                                reader.pushback()
                                 urlCheck(tokenizer, reader)
                             }
                         }

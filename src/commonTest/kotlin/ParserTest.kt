@@ -798,4 +798,27 @@ class ParserTest {
         assertIs<StringToken>(result[0])
         assertEquals(content, result[0].value)
     }
+
+    @Test
+    fun testUrl2() {
+        val content = "成人向けな絵とか漫画とか描いています ファンティア【http://fantia.jp/fanclubs/6173】 FANBOX【http://cmyu6slv.fanbox.cc】skeb【https://skeb.jp/@Aoiro_Banana】無断転載AI学習禁止"
+        val parser =
+            TwitterParser(
+                enableNonAsciiInUrl = false,
+            )
+        val result = parser.parse(content)
+        assertEquals(7, result.size)
+        assertContentEquals(
+            listOf(
+                "成人向けな絵とか漫画とか描いています ファンティア【",
+                "http://fantia.jp/fanclubs/6173",
+                "】 FANBOX【",
+                "http://cmyu6slv.fanbox.cc",
+                "】skeb【",
+                "https://skeb.jp/@Aoiro_Banana",
+                "】無断転載AI学習禁止",
+            ),
+            result.map { it.value }
+        )
+    }
 }
