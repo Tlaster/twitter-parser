@@ -1,5 +1,5 @@
 plugins {
-    kotlin("multiplatform") version "2.0.0"
+    kotlin("multiplatform") version "2.1.0"
     id("org.jetbrains.kotlinx.kover") version "0.7.0-Alpha"
     id("com.vanniktech.maven.publish") version "0.34.0"
 }
