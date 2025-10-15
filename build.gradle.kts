@@ -1,5 +1,5 @@
 plugins {
-    kotlin("multiplatform") version "1.9.23"
+    kotlin("multiplatform") version "2.0.0"
     id("org.jetbrains.kotlinx.kover") version "0.7.0-Alpha"
     id("com.vanniktech.maven.publish") version "0.34.0"
 }
@@ -25,6 +25,7 @@ kotlin {
             useJUnitPlatform()
         }
     }
+    iosX64()
     iosArm64()
     iosSimulatorArm64()
     macosArm64()
