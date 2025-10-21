@@ -300,18 +300,19 @@ internal data object UrlPortState : State {
 internal data object DollarState : State {
     override fun read(tokenizer: Tokenizer, reader: Reader) {
         if (prevIsSpace(reader)) {
-            when (val current = reader.consume()) {
-                in asciiAlpha -> {
-                    tokenizer.emit(TokenCharacterType.Cash, reader.position - 1)
-                    tokenizer.switch(CashTagState)
-                    reader.pushback()
-                }
-
-                else -> {
-                    tokenizer.emit(TokenCharacterType.Character, reader.position - 1)
-                    tokenizer.switch(DataState)
-                    reader.pushback()
-                }
+            val current = reader.consume()
+            if (current in asciiAlpha) {
+                tokenizer.emit(TokenCharacterType.Cash, reader.position - 1)
+                tokenizer.switch(CashTagState)
+                reader.pushback()
+            } else if (tokenizer.enableCJKInCashTag && current.isFullWidthChar() && !current.isFullWidthSymbol()) {
+                tokenizer.emit(TokenCharacterType.Cash, reader.position - 1)
+                tokenizer.switch(CJKCashTagState)
+                reader.pushback()
+            } else {
+                tokenizer.emit(TokenCharacterType.Character, reader.position - 1)
+                tokenizer.switch(DataState)
+                reader.pushback()
             }
         } else {
             tokenizer.emit(TokenCharacterType.Character, reader.position)
@@ -320,40 +321,71 @@ internal data object DollarState : State {
     }
 }
 
-internal data object CashTagState : State {
-    private fun cashCheck(tokenizer: Tokenizer, reader: Reader) {
-        var index = reader.position - 2
-        while (index > 0) {
-            if (tokenizer.readAt(index) != TokenCharacterType.Cash) {
-                break
+internal data object CJKCashTagState : State {
+    override fun read(tokenizer: Tokenizer, reader: Reader) {
+        val current = reader.consume()
+        if (current.isFullWidthChar() && !current.isFullWidthSymbol() || current in asciiAlphanumericUnderscore) {
+            tokenizer.emit(TokenCharacterType.Cash, reader.position)
+            // if cashtag length > 10, accept as cash and switch to data state
+            var start = reader.position - 1
+            var length = 0
+            while (start > 0) {
+                if (tokenizer.readAt(start - 1) != TokenCharacterType.Cash) {
+                    break
+                }
+                start--
+                length++
             }
-            index--
-        }
-        val cash = reader.readAt(index + 1, reader.position - index - 2).trimStart('$').trimStart('＄')
-        if (cash.all { it in asciiDigit }) {
-            tokenizer.emitRange(TokenCharacterType.Character, index, reader.position)
-            tokenizer.switch(DataState)
-            reader.pushback()
+            if (length >= 10) {
+                tokenizer.accept()
+                tokenizer.switch(DataState)
+            }
         } else {
             tokenizer.accept()
             tokenizer.switch(DataState)
             reader.pushback()
         }
     }
+}
 
+internal data object CashTagState : State {
 
     override fun read(tokenizer: Tokenizer, reader: Reader) {
-        when (val current = reader.consume()) {
-            in asciiAlphanumeric -> {
-                tokenizer.emit(TokenCharacterType.Cash, reader.position)
+        val current = reader.consume()
+        if (current in asciiAlphanumeric) {
+            tokenizer.emit(TokenCharacterType.Cash, reader.position)
+            // if cashtag length > 20, accept as cash and switch to data state
+            var start = reader.position - 1
+            var length = 0
+            while (start > 0) {
+                if (tokenizer.readAt(start - 1) != TokenCharacterType.Cash) {
+                    break
+                }
+                start--
+                length++
             }
-
-            else -> {
-                cashCheck(tokenizer, reader)
-//                tokenizer.accept()
-//                tokenizer.switch(DataState)
-//                reader.pushback()
+            if (length >= 20) {
+                tokenizer.accept()
+                tokenizer.switch(DataState)
             }
+        } else {
+            if (current in emptyChar + eof || current in marks) {
+                // accept as cash tag
+                tokenizer.accept()
+            } else {
+                // reject as character
+                var start = reader.position - 1
+                while (start > 0) {
+                    if (tokenizer.readAt(start - 1) != TokenCharacterType.Cash) {
+                        break
+                    }
+                    start--
+                }
+                tokenizer.emitRange(TokenCharacterType.Character, start, reader.position)
+            }
+            tokenizer.accept()
+            tokenizer.switch(DataState)
+            reader.pushback()
         }
     }
 }

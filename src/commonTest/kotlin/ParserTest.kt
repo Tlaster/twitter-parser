@@ -889,4 +889,79 @@ class ParserTest {
             result
         )
     }
+
+    @Test
+    fun testCashTag2() {
+        val content = "投資初心者は \$XYZをチェック！"
+        val parser = TwitterParser(
+            enableCJKInCashTag = true,
+        )
+        val result = parser.parse(content)
+        assertContentEquals(
+            listOf(
+                StringToken("投資初心者は \$XYZをチェック！"),
+            ),
+            result
+        )
+    }
+
+    @Test
+    fun testCashTag3() {
+        val content = "\$abcdefghijklmnopqrstuvwxyzABCD"
+        val parser = TwitterParser()
+        val result = parser.parse(content)
+        assertContentEquals(
+            listOf(
+                CashTagToken("\$abcdefghijklmnopqrst"),
+                StringToken("uvwxyzABCD"),
+            ),
+            result
+        )
+    }
+
+    @Test
+    fun testCashTag4() {
+        val content = "\$あいうえおabcdefghijklmnopqrstuvwxyzABCD"
+        val parser = TwitterParser(
+            enableCJKInCashTag = true,
+        )
+        val result = parser.parse(content)
+        assertContentEquals(
+            listOf(
+                CashTagToken("\$あいうえおabcde"),
+                StringToken("fghijklmnopqrstuvwxyzABCD"),
+            ),
+            result
+        )
+    }
+
+    @Test
+    fun testCashTag5() {
+        val content = "\$あいうえお、かきくけこ"
+        val parser = TwitterParser(
+            enableCJKInCashTag = true,
+        )
+        val result = parser.parse(content)
+        assertContentEquals(
+            listOf(
+                CashTagToken("\$あいうえお"),
+                StringToken("、かきくけこ"),
+            ),
+            result
+        )
+    }
+
+    @Test
+    fun testCashTag6() {
+        val content = "\$abc\$def"
+        val parser = TwitterParser()
+        val result = parser.parse(content)
+        assertContentEquals(
+            listOf(
+                CashTagToken("\$abc"),
+                StringToken("\$def"),
+            ),
+            result
+        )
+    }
 }

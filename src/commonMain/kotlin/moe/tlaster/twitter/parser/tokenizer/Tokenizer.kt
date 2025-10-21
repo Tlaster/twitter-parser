@@ -6,6 +6,7 @@ internal class Tokenizer(
     val enableDomainDetection: Boolean = false,
     val enableNonAsciiInUrl: Boolean = true,
     val enableEscapeInUrl: Boolean = false,
+    val enableCJKInCashTag: Boolean = false,
     val validMarkInUserName: List<Char> = listOf(),
     val validMarkInHashTag: List<Char> = listOf(),
 ) {
