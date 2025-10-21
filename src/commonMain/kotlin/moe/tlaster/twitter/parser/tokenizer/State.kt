@@ -20,8 +20,55 @@ private val marks = "-._~:/?#[]@!\$&'()*+,;=".toList()
 private val urlDisallowedEndMarks = ".".toList()
 private val urlChar = asciiAlphanumeric + marks
 
+private fun Int.isFullWidthCodePoint(): Boolean {
+    val cp = this
+    if (cp < 0) return false
+    return (cp in 0x1100..0x115F) ||            // Hangul Jamo
+            (cp == 0x2329 || cp == 0x232A) ||    // 〈 〉
+            (cp in 0x2E80..0xA4CF && cp != 0x303F) || // CJK radicals/strokes… Yi (exclude 0x303F)
+            (cp in 0xAC00..0xD7A3) ||            // Hangul Syllables
+            (cp in 0xF900..0xFAFF) ||            // CJK Compatibility Ideographs
+            (cp in 0xFE10..0xFE19) ||            // Vertical forms
+            (cp in 0xFE30..0xFE6F) ||            // CJK Compatibility Forms… Small Form Variants
+            (cp in 0xFF01..0xFF60) ||            // Fullwidth ASCII variants etc.
+            (cp in 0xFFE0..0xFFE6) ||            // Fullwidth symbols
+            (cp in 0x1B000..0x1B001) ||          // Kana Supplement
+            (cp in 0x1F200..0x1F251) ||          // Enclosed Ideographic Supplement
+            (cp in 0x20000..0x3FFFD)             // CJK Unified Ideographs Ext. B–(up to T)
+}
+
+
+private fun Char.isFullWidthChar(): Boolean = this.code.isFullWidthCodePoint()
+
+
+private fun Int.isFullWidthSymbolCodePoint(): Boolean {
+    val cp = this
+    if (cp < 0) return false
+
+    // CJK Symbols & Punctuation
+    if (cp in 0x3001..0x303D) return true  // 「」『』、《》、。 、、
+    // Vertical Forms
+    if (cp in 0xFE10..0xFE19) return true
+    // CJK Compatibility Forms
+    if (cp in 0xFE30..0xFE4F) return true
+    // Small Form Variants
+    if (cp in 0xFE50..0xFE6F) return true
+    // Fullwidth ASCII
+    if (cp in 0xFF01..0xFF0F) return true   // ！"#$%&'()*+,-./
+    if (cp in 0xFF1A..0xFF20) return true   // ：；＜＝＞？＠
+    if (cp in 0xFF3B..0xFF40) return true   // ［＼］＾＿`
+    if (cp in 0xFF5B..0xFF60) return true   // ｛｜｝～
+    return false
+}
+
+private fun Char.isFullWidthSymbol(): Boolean = this.code.isFullWidthSymbolCodePoint()
+
 private fun prevIsSpace(reader: Reader): Boolean {
     return prevIsIn(reader, emptyChar)
+}
+
+private fun prevIsFullWidthChar(reader: Reader): Boolean {
+    return reader.position >= 2 && reader.readAt(reader.position - 2).isFullWidthChar()
 }
 
 private fun prevIsIn(reader: Reader, chars: List<Char>): Boolean {
@@ -314,7 +361,7 @@ internal data object CashTagState : State {
 internal data object AtState : State {
     override fun read(tokenizer: Tokenizer, reader: Reader) {
         val availblePrevChar = asciiAlphanumeric + tokenizer.validMarkInUserName
-        if (prevIsSpace(reader) || !prevIsIn(reader, availblePrevChar)) {
+        if (prevIsSpace(reader) || !prevIsIn(reader, availblePrevChar) || prevIsFullWidthChar(reader)) {
             val userNameTokens = asciiAlphanumericUnderscore + tokenizer.validMarkInUserName
             when (val current = reader.consume()) {
                 in userNameTokens -> {
@@ -422,9 +469,9 @@ internal data object HeadlessUrlState : State {
 
 internal data object HashState : State {
     override fun read(tokenizer: Tokenizer, reader: Reader) {
-        if (prevIsSpace(reader)) {
+        if (prevIsSpace(reader) || prevIsFullWidthChar(reader)) {
             val current = reader.consume()
-            if (current.isLetterOrDigit() || current == '_' || current in tokenizer.validMarkInHashTag) {
+            if (current.isLetterOrDigit() || current == '_' || current in tokenizer.validMarkInHashTag || current.isFullWidthChar()) {
                 tokenizer.emit(TokenCharacterType.HashTag, reader.position - 1)
                 tokenizer.switch(HashTagState)
                 reader.pushback()
@@ -443,7 +490,7 @@ internal data object HashState : State {
 internal data object HashTagState : State {
     override fun read(tokenizer: Tokenizer, reader: Reader) {
         val current = reader.consume()
-        if (current.isLetterOrDigit() || current == '_' || current in tokenizer.validMarkInHashTag) {
+        if (current.isLetterOrDigit() || current == '_' || current in tokenizer.validMarkInHashTag || (current.isFullWidthChar() && !current.isFullWidthSymbol())) {
             tokenizer.emit(TokenCharacterType.HashTag, reader.position)
         } else {
             tokenizer.accept()

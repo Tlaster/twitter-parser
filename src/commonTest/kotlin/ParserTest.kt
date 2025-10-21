@@ -810,15 +810,15 @@ class ParserTest {
         assertEquals(7, result.size)
         assertContentEquals(
             listOf(
-                "成人向けな絵とか漫画とか描いています ファンティア【",
-                "http://fantia.jp/fanclubs/6173",
-                "】 FANBOX【",
-                "http://cmyu6slv.fanbox.cc",
-                "】skeb【",
-                "https://skeb.jp/@Aoiro_Banana",
-                "】無断転載AI学習禁止",
+                StringToken("成人向けな絵とか漫画とか描いています ファンティア【"),
+                UrlToken("http://fantia.jp/fanclubs/6173"),
+                StringToken("】 FANBOX【"),
+                UrlToken("http://cmyu6slv.fanbox.cc"),
+                StringToken("】skeb【"),
+                UrlToken("https://skeb.jp/@Aoiro_Banana"),
+                StringToken("】無断転載AI学習禁止"),
             ),
-            result.map { it.value }
+            result
         )
     }
 
@@ -832,11 +832,61 @@ class ParserTest {
         assertEquals(3, result.size)
         assertContentEquals(
             listOf(
-                "み(",
-                "@akemitan_",
-                " )大先生のshizu本&メイキングset着弾！！",
+                StringToken("み("),
+                UserNameToken("@akemitan_"),
+                StringToken(" )大先生のshizu本&メイキングset着弾！！")
             ),
-            result.map { it.value }
+            result
+        )
+    }
+
+    @Test
+    fun testHashtag() {
+        val content = """『#バック・トゥ・ザ・フューチャー』
+公開40周年記念上映！
+⚡️12/12（金）より1週間限定公開⚡
+
+世代を超えて愛され続ける
+伝説に残る壮大なタイムトラベルSFをIMAXで🚗🔥
+圧倒的な没入体験を。
+
+#IMAXで体感せよ #BTTF40周年
+#バック・トゥ・ザ・フューチャーの日""".trimIndent()
+        val parser = TwitterParser(
+            enableNonAsciiInUrl = false,
+        )
+        val result = parser.parse(content)
+        assertContentEquals(
+            listOf(
+                StringToken("『"),
+                HashTagToken("#バック・トゥ・ザ・フューチャー"),
+                StringToken("』\n公開40周年記念上映！\n⚡️12/12（金）より1週間限定公開⚡\n\n世代を超えて愛され続ける\n伝説に残る壮大なタイムトラベルSFをIMAXで🚗🔥\n圧倒的な没入体験を。\n\n"),
+                HashTagToken("#IMAXで体感せよ"),
+                StringToken(" "),
+                HashTagToken("#BTTF40周年"),
+                StringToken("\n"),
+                HashTagToken("#バック・トゥ・ザ・フューチャーの日"),
+            ),
+            result
+        )
+    }
+
+
+    @Test
+    fun testUserName3() {
+        val content = "み『@akemitan_』大先生のshizu本&メイキングset着弾！！"
+        val parser = TwitterParser(
+            enableNonAsciiInUrl = false,
+        )
+        val result = parser.parse(content)
+        assertEquals(3, result.size)
+        assertContentEquals(
+            listOf(
+                StringToken("み『"),
+                UserNameToken("@akemitan_"),
+                StringToken("』大先生のshizu本&メイキングset着弾！！")
+            ),
+            result
         )
     }
 }
