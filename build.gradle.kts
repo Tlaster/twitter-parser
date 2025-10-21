@@ -1,12 +1,12 @@
 plugins {
-    kotlin("multiplatform") version "1.9.23"
+    kotlin("multiplatform") version "2.1.0"
     id("org.jetbrains.kotlinx.kover") version "0.7.0-Alpha"
     id("com.vanniktech.maven.publish") version "0.34.0"
 }
 
 val libName = "twitter-parser"
 val libGroup = "moe.tlaster"
-val libVersion = "0.5.7-SNAPSHOT"
+val libVersion = "0.5.8-SNAPSHOT"
 
 group = libGroup
 version = libVersion
@@ -25,6 +25,7 @@ kotlin {
             useJUnitPlatform()
         }
     }
+    iosX64()
     iosArm64()
     iosSimulatorArm64()
     macosArm64()
