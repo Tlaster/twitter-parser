@@ -964,4 +964,64 @@ class ParserTest {
             result
         )
     }
+
+    @Test
+    fun testCashTag7() {
+        val content = "\$12345"
+        val parser = TwitterParser(
+            enableCJKInCashTag = true,
+        )
+        val result = parser.parse(content)
+        assertContentEquals(
+            listOf(
+                CashTagToken("\$12345"),
+            ),
+            result
+        )
+    }
+
+    @Test
+    fun testCashTag8() {
+        val content = "\$12345k"
+        val parser = TwitterParser(
+            enableCJKInCashTag = true,
+        )
+        val result = parser.parse(content)
+        assertContentEquals(
+            listOf(
+                StringToken("\$12345k"),
+            ),
+            result
+        )
+    }
+
+    @Test
+    fun testCashTag9() {
+        val content = "\$12345etc"
+        val parser = TwitterParser(
+            enableCJKInCashTag = true,
+        )
+        val result = parser.parse(content)
+        assertContentEquals(
+            listOf(
+                CashTagToken("\$12345etc"),
+            ),
+            result
+        )
+    }
+
+    @Test
+    fun testCashTag10() {
+        val content = "\$1234/5etc"
+        val parser = TwitterParser(
+            enableCJKInCashTag = true,
+        )
+        val result = parser.parse(content)
+        assertContentEquals(
+            listOf(
+                CashTagToken("\$1234/5etc"),
+            ),
+            result
+        )
+    }
 }

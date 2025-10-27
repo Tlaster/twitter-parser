@@ -309,6 +309,10 @@ internal data object DollarState : State {
                 tokenizer.emit(TokenCharacterType.Cash, reader.position - 1)
                 tokenizer.switch(CJKCashTagState)
                 reader.pushback()
+            } else if (tokenizer.enableCJKInCashTag && current in asciiDigit) {
+                tokenizer.emit(TokenCharacterType.Cash, reader.position - 1)
+                tokenizer.switch(DigitCashState)
+                reader.pushback()
             } else {
                 tokenizer.emit(TokenCharacterType.Character, reader.position - 1)
                 tokenizer.switch(DataState)
@@ -317,6 +321,46 @@ internal data object DollarState : State {
         } else {
             tokenizer.emit(TokenCharacterType.Character, reader.position)
             tokenizer.switch(DataState)
+        }
+    }
+}
+
+internal data object DigitCashState : State {
+    override fun read(tokenizer: Tokenizer, reader: Reader) {
+        val current = reader.consume()
+        if (current in listOf('k', 'K', 'm', 'M', 'b', 'B', '.', ',')) {
+            // reject
+            var start = reader.position - 1
+            while (start > 0) {
+                if (tokenizer.readAt(start - 1) != TokenCharacterType.Cash) {
+                    break
+                }
+                start--
+            }
+            tokenizer.emitRange(TokenCharacterType.Character, start, reader.position)
+            tokenizer.accept()
+            tokenizer.switch(DataState)
+            reader.pushback()
+        } else if (current in emptyChar + eof || current in "-._~:?#[]@!\$&'()*+,;=".toList()) {
+            tokenizer.accept()
+            tokenizer.switch(DataState)
+            reader.pushback()
+        } else {
+            tokenizer.emit(TokenCharacterType.Cash, reader.position)
+            // if cashtag length > 10, accept as cash and switch to data state
+            var start = reader.position - 1
+            var length = 0
+            while (start > 0) {
+                if (tokenizer.readAt(start - 1) != TokenCharacterType.Cash) {
+                    break
+                }
+                start--
+                length++
+            }
+            if (length >= 10) {
+                tokenizer.accept()
+                tokenizer.switch(DataState)
+            }
         }
     }
 }
