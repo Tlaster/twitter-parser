@@ -1024,4 +1024,33 @@ class ParserTest {
             result
         )
     }
+
+    @Test
+    fun testCashTag13() {
+        val content = "$4"
+        val parser = TwitterParser(
+            enableNonAsciiInUrl = false,
+            enableEscapeInUrl = true,
+            enableCJKInCashTag = true,
+        )
+        val result = parser.parse(content)
+        assertContentEquals(
+            listOf(
+                CashTagToken("$4"),
+            ),
+            result
+        )
+    }
+
+    @Test
+    fun testUserNameWithSlash() {
+        val content = "@test/test"
+        val parser = TwitterParser(
+            enableNonAsciiInUrl = false,
+        )
+        val result = parser.parse(content)
+        assertEquals(1, result.size)
+        assertIs<StringToken>(result[0])
+        assertEquals(content, result[0].value)
+    }
 }

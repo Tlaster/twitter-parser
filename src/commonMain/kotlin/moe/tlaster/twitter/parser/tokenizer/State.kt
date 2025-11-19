@@ -476,6 +476,17 @@ internal data object UserNameState : State {
                     reader.pushback()
                 }
             }
+            '/' -> {
+                if (tokenizer.validMarkInUserName.isEmpty()) {
+                    tokenizer.reject(reader.position)
+                    tokenizer.switch(DataState)
+                    reader.pushback()
+                } else {
+                    tokenizer.accept()
+                    tokenizer.switch(DataState)
+                    reader.pushback()
+                }
+            }
             else -> {
                 tokenizer.accept()
                 tokenizer.switch(DataState)
