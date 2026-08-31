@@ -9,7 +9,9 @@
 ![badge-linux](https://img.shields.io/badge/Platform-Linux-black)
 ![badge-windows](https://img.shields.io/badge/Platform-Windows-blue)
 
-A Kotlin multiplatform library to parse Twitter text. Like the [twitter-text](https://github.com/twitter/twitter-text).
+A Kotlin multiplatform library with 0.5.10-compatible defaults and an optional
+[twitter-text Java 3.1.0](https://github.com/twitter/twitter-text/tree/30e2430d90cff3b46393ea54caf511441983c260)
+entity-extraction mode.
 
 # Setup
 ```
@@ -21,6 +23,22 @@ val parser = TwitterParser()
 val content = "I'm using twitter parser by @MTlaster to prase twitter text #Kotlin "
 val result = parser.parse(content)
 ```
+
+All existing parser options remain active, with their historical defaults and
+0.5.10 parsing behavior. The twitter-text behavior is selected only when all
+three URL options match the configuration below. Emoji, CJK cashtags, and custom
+username/hashtag marks remain available as extensions in either mode.
+
+Use this configuration for twitter-text Java 3.1.0-compatible extraction:
+
+```Kotlin
+val twitterTextParser = TwitterParser(
+    enableDomainDetection = true,
+    enableNonAsciiInUrl = false,
+    enableEscapeInUrl = true,
+)
+```
+
 The `result` will be:
 ```
 [
@@ -39,7 +57,8 @@ Run the complete JVM throughput, allocation, batch, and concurrency benchmark:
 ./gradlew jvmBenchmark
 ```
 
-Use `--args=quick` for a short smoke run or `--args=stress` for longer batch and concurrency runs.
+The workload set covers both legacy and twitter-text modes. Use `--args=quick`
+for a short smoke run or `--args=stress` for longer batch and concurrency runs.
 
 # LICENSE
 ```

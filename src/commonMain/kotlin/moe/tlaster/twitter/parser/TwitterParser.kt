@@ -9,15 +9,35 @@ class TwitterParser(
     private val validMarkInUserName: List<Char> = listOf(),
     private val validMarkInHashTag: List<Char> = listOf(),
 ) {
-    private val engine = ParserEngine(
-        enableEmoji = enableEmoji,
-        enableDomainDetection = enableDomainDetection,
-        enableNonAsciiInUrl = enableNonAsciiInUrl,
-        enableEscapeInUrl = enableEscapeInUrl,
-        enableCJKInCashTag = enableCJKInCashTag,
-        validMarkInUserName = validMarkInUserName,
-        validMarkInHashTag = validMarkInHashTag,
-    )
+    private val twitterTextEngine = if (
+        enableDomainDetection && !enableNonAsciiInUrl && enableEscapeInUrl
+    ) {
+        ParserEngine(
+            enableEmoji = enableEmoji,
+            extractUrlWithoutProtocol = true,
+            enableNonAsciiInUrl = false,
+            enableEscapeInUrl = true,
+            enableCJKInCashTag = enableCJKInCashTag,
+            validMarkInUserName = validMarkInUserName,
+            validMarkInHashTag = validMarkInHashTag,
+        )
+    } else {
+        null
+    }
 
-    fun parse(input: String): List<Token> = engine.parse(input)
+    private val legacyEngine = if (twitterTextEngine == null) {
+        LegacyParserEngine(
+            enableEmoji = enableEmoji,
+            enableDomainDetection = enableDomainDetection,
+            enableNonAsciiInUrl = enableNonAsciiInUrl,
+            enableEscapeInUrl = enableEscapeInUrl,
+            enableCJKInCashTag = enableCJKInCashTag,
+            validMarkInUserName = validMarkInUserName,
+            validMarkInHashTag = validMarkInHashTag,
+        )
+    } else {
+        null
+    }
+
+    fun parse(input: String): List<Token> = twitterTextEngine?.parse(input) ?: legacyEngine!!.parse(input)
 }

@@ -116,6 +116,11 @@ private fun createWorkloads(): List<Workload> {
         validMarkInHashTag = listOf('-'),
     )
     val domains = TwitterParser(enableDomainDetection = true)
+    val twitterText = TwitterParser(
+        enableDomainDetection = true,
+        enableNonAsciiInUrl = false,
+        enableEscapeInUrl = true,
+    )
 
     return listOf(
         Workload("plain", defaults, "a".repeat(280)),
@@ -128,6 +133,11 @@ private fun createWorkloads(): List<Workload> {
         Workload("tags", defaults, repeatToLength("@username #hashtag \$AAPL ", 280)),
         Workload("domain-valid", domains, repeatToLength("example.com ", 280)),
         Workload("domain-invalid", domains, repeatToLength("example.invalid ", 280)),
+        Workload(
+            "twitter-text",
+            twitterText,
+            repeatToLength("example.com https://example.com/path?q=1 @username #Kotlin \$AAPL ", 280),
+        ),
     )
 }
 
