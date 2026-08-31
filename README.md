@@ -31,6 +31,16 @@ The `result` will be:
 ]
 ```
 
+# Benchmark
+
+Run the complete JVM throughput, allocation, batch, and concurrency benchmark:
+
+```shell
+./gradlew jvmBenchmark
+```
+
+Use `--args=quick` for a short smoke run or `--args=stress` for longer batch and concurrency runs.
+
 # LICENSE
 ```
 MIT License

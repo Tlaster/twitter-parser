@@ -6,7 +6,7 @@ plugins {
 
 val libName = "twitter-parser"
 val libGroup = "moe.tlaster"
-val libVersion = "0.5.10-SNAPSHOT"
+val libVersion = "0.5.10"
 
 group = libGroup
 version = libVersion
@@ -43,6 +43,19 @@ kotlin {
             }
         }
     }
+}
+
+tasks.register<JavaExec>("jvmBenchmark") {
+    group = "benchmark"
+    description = "Runs parser throughput, allocation, batch, and concurrency benchmarks."
+    dependsOn("jvmTestClasses")
+    mainClass.set("moe.tlaster.twitter.parser.benchmark.ParserBenchmark")
+    classpath(
+        layout.buildDirectory.dir("classes/kotlin/jvm/test"),
+        layout.buildDirectory.dir("classes/kotlin/jvm/main"),
+        configurations.named("jvmTestRuntimeClasspath"),
+    )
+    jvmArgs("-Xms1g", "-Xmx1g")
 }
 
 

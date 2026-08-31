@@ -1,9 +1,5 @@
 package moe.tlaster.twitter.parser
 
-import moe.tlaster.twitter.parser.builder.TreeBuilder
-import moe.tlaster.twitter.parser.tokenizer.StringReader
-import moe.tlaster.twitter.parser.tokenizer.Tokenizer
-
 class TwitterParser(
     private val enableEmoji: Boolean = false,
     private val enableDomainDetection: Boolean = false,
@@ -13,19 +9,15 @@ class TwitterParser(
     private val validMarkInUserName: List<Char> = listOf(),
     private val validMarkInHashTag: List<Char> = listOf(),
 ) {
+    private val engine = ParserEngine(
+        enableEmoji = enableEmoji,
+        enableDomainDetection = enableDomainDetection,
+        enableNonAsciiInUrl = enableNonAsciiInUrl,
+        enableEscapeInUrl = enableEscapeInUrl,
+        enableCJKInCashTag = enableCJKInCashTag,
+        validMarkInUserName = validMarkInUserName,
+        validMarkInHashTag = validMarkInHashTag,
+    )
 
-    fun parse(input: String): List<Token> {
-        val tokenizer = Tokenizer(
-            enableEmoji = enableEmoji,
-            enableDomainDetection = enableDomainDetection,
-            enableNonAsciiInUrl = enableNonAsciiInUrl,
-            enableEscapeInUrl = enableEscapeInUrl,
-            validMarkInUserName = validMarkInUserName,
-            validMarkInHashTag = validMarkInHashTag,
-            enableCJKInCashTag = enableCJKInCashTag,
-        )
-        val tokenCharacterTypes = tokenizer.parse(StringReader(input))
-        return TreeBuilder().build(StringReader(input), tokenCharacterTypes)
-    }
+    fun parse(input: String): List<Token> = engine.parse(input)
 }
-
